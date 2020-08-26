@@ -34,11 +34,6 @@ context('Check label attribute changes', () => {
         it('Open object menu', () => {
             cy.get('#cvat_canvas_shape_1').trigger('mousemove').rightclick()
         })
-        it('Open object menu details', () => {
-            cy.get('.cvat-canvas-context-menu')
-            .contains('Details')
-            .click()
-        })
         it('Clear field of text attribute and write new value', () => {
             cy.get('.cvat-canvas-context-menu')
             .find('.cvat-object-item-text-attribute')
@@ -47,9 +42,12 @@ context('Check label attribute changes', () => {
             .type(newLabelAttrValue)
         })
         it('Check what value of right panel is changed too', () => {
-            cy.get('#cvat-objects-sidebar-state-item-1')
-            .find('.cvat-object-item-text-attribute')
-            .should('have.value', newLabelAttrValue)
+            cy.get('#cvat-objects-sidebar-state-item-1').within(() => {
+                cy.contains('Details')
+                .click()
+                cy.get('.cvat-object-item-text-attribute')
+                .should('have.value', newLabelAttrValue)
+            })
         })
     })
 })
