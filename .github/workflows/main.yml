@@ -45,6 +45,7 @@ jobs:
       - name: Collect coverage data
         env:
           CONTAINER_COVERAGE_DATA_DIR: "/coverage_data"
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: |
           mv ./tests/.nyc_output ./
           npx nyc report --reporter=text-lcov >> ${GITHUB_WORKSPACE}/lcov.info
