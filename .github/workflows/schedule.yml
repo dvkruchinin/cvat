@@ -1,4 +1,4 @@
-name: CI
+name: CI-nightly
 on:
   schedule:
     - cron: '0 * * * *'
