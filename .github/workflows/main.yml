@@ -20,8 +20,10 @@ jobs:
             python-version: '3.5'
       - uses: actions/cache@v2
         with:
-            path: ~/.npm
-            key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
       - name: Build CVAT
         env:
           CONTAINER_COVERAGE_DATA_DIR: "/coverage_data"
