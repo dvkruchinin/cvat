@@ -23,6 +23,8 @@ jobs:
         with:
             python-version: '3.5'
 
+      # Runs a set of commands using the runners shell
+      - name: Build CVAT
         env:
           CONTAINER_COVERAGE_DATA_DIR: "/coverage_data"
           HOST_COVERAGE_DATA_DIR: $GITHUB_WORKSPACE
@@ -30,9 +32,6 @@ jobs:
           DJANGO_SU_EMAIL: "admin@localhost.company"
           DJANGO_SU_PASSWORD: "12qwaszx"
           API_ABOUT_PAGE: "localhost:8080/api/v1/server/about"
-
-      # Runs a set of commands using the runners shell
-      - name: Build CVAT
         run: |
           echo "GITHUB_WORKSPACE: ${GITHUB_WORKSPACE}"
           echo "CONTAINER_COVERAGE_DATA_DIR: ${CONTAINER_COVERAGE_DATA_DIR}"
