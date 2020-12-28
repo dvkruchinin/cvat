@@ -12,11 +12,7 @@ services:
       - cvat_ui
       - cvat_proxy
     environment:
-      COVERALLS_REPO_TOKEN:
-      GITHUB_WORKSPACE:
-      GITHUB_RUN_ID:
-      GITHUB_HEAD_REF:
-      GITHUB_RUN_NUMBER:
       CONTAINER_COVERAGE_DATA_DIR:
+      HOST_COVERAGE_DATA_DIR:
     volumes:
-      - ${GITHUB_WORKSPACE}:${CONTAINER_COVERAGE_DATA_DIR}
+      - ${HOST_COVERAGE_DATA_DIR}:${CONTAINER_COVERAGE_DATA_DIR}
