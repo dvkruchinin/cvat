@@ -5,6 +5,14 @@ name: CVAT
 # Controls when the action will run.
 on: [push, pull_request]
 
+env:
+  CONTAINER_COVERAGE_DATA_DIR: "/coverage_data"
+  HOST_COVERAGE_DATA_DIR: "${GITHUB_WORKSPACE}"
+  DJANGO_SU_NAME: "admin"
+  DJANGO_SU_EMAIL: "admin@localhost.company"
+  DJANGO_SU_PASSWORD: "12qwaszx"
+  API_ABOUT_PAGE: "localhost:8080/api/v1/server/about"
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
@@ -16,6 +24,9 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+        with:
+            node-version: 12
+            python-version: '3.5'
 
       # Runs a set of commands using the runners shell
       - name: Build CVAT
