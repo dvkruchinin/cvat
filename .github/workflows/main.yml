@@ -3,8 +3,7 @@ on:
   push:
     branches:
       - 'master'
-      - 'develop'
-      - 'dkru/move-to-github-ci'
+      - 'develop-tmp'
   pull_request:
     branches:
       - '*'
