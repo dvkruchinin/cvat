@@ -13,6 +13,6 @@ services:
       - cvat_proxy
     environment:
       CONTAINER_COVERAGE_DATA_DIR:
-      HOST_COVERAGE_DATA_DIR:
+      GITHUB_WORKSPACE:
     volumes:
-      - ${HOST_COVERAGE_DATA_DIR}:${CONTAINER_COVERAGE_DATA_DIR}
+      - ${GITHUB_WORKSPACE}:${CONTAINER_COVERAGE_DATA_DIR}
