@@ -35,3 +35,5 @@ exclude_lines =
 ignore_errors = true
 
 skip_empty = true
+
+[json]
