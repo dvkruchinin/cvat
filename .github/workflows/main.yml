@@ -17,13 +17,18 @@ jobs:
         with:
             node-version: 12
       - name: ESLint Code Base
-        uses: bradennapier/eslint-plus-action@v3.4.2
-        env:
-          issueSummary: false
+        uses: wearerequired/lint-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          stylelint: true
+          eslint: true
+          prettier: true
       - name: Bandit Code Base
         uses: jpetrucciani/bandit-check@master
         with:
           path: '.'
+      - name: Python Linter
+        uses: sunnysid3up/python-linter@master
       # - name: Build CVAT
       #   env:
       #     HOST_COVERAGE_DATA_DIR: ${{ github.workspace }}
