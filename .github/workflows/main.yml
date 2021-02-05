@@ -15,21 +15,19 @@ jobs:
       - uses: actions/setup-node@v2
         with:
             node-version: 12
-      - name: NPM install
-        run: npm install
-      - name: ESLint Code Base
-        uses: wearerequired/lint-action@v1
+      - name: ESLint code base
+        uses: bradennapier/eslint-plus-action@v3.4.2
+        continue-on-error: true
+
+      - name: Bandit check
+        uses: jpetrucciani/bandit-check@master
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          stylelint: true
-          eslint: true
-          prettier: true
-      # - name: Bandit Code Base
-      #   uses: jpetrucciani/bandit-check@master
-      #   with:
-      #     path: '.'
-      # - name: Python Linter
-      #   uses: sunnysid3up/python-linter@master
+          path: '.'
+        continue-on-error: true
+
+      - name: Pylint code base
+        uses: sunnysid3up/python-linter@master
+        continue-on-error: true
       # - name: Build CVAT
       #   env:
       #     HOST_COVERAGE_DATA_DIR: ${{ github.workspace }}
