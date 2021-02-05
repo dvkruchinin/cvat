@@ -21,8 +21,11 @@ jobs:
           VALIDATE_ALL_CODEBASE: false
           DEFAULT_BRANCH: develop
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TYPESCRIPT_ES_CONFIG_FILE: '.eslintrc.js'
           JAVASCRIPT_ES_CONFIG_FILE: '.eslintrc.js'
-          YAML_CONFIG_FILE: '.prettierrc'
+          PYTHON_PYLINT_CONFIG_FILE: '.pylintrc'
+          MARKDOWN_CONFIG_FILE: '.remarkrc.js'
+          CSS_FILE_NAME: '.stylelintrc.json'
           FILTER_REGEX_EXCLUDE: '**/3rdparty/**'
       # - name: Build CVAT
       #   env:
