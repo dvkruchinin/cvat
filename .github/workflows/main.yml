@@ -4,7 +4,6 @@ on:
     branches:
       - 'master'
       - 'develop'
-      - 'dkru/github-actions-linters-checkers'
   pull_request:
     branches:
       - '*'
@@ -16,8 +15,8 @@ jobs:
       - uses: actions/setup-node@v2
         with:
             node-version: 12
-      - name: ESLint Code Base
         run: npm install
+      - name: ESLint Code Base
         uses: wearerequired/lint-action@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
