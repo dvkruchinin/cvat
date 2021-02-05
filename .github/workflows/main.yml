@@ -18,13 +18,11 @@ jobs:
       - name: Lint Code Base
         uses: github/super-linter@v3
         env:
-          # VALIDATE_ALL_CODEBASE: false
+          VALIDATE_ALL_CODEBASE: false
+          LINTER_RULES_PATH: /
           DEFAULT_BRANCH: develop
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PYTHON_PYLINT_CONFIG_FILE: '.pylintrc'
-          MARKDOWN_CONFIG_FILE: '.remarkrc.js'
-          CSS_FILE_NAME: '.stylelintrc.json'
-          FILTER_REGEX_EXCLUDE: '**/3rdparty/**'
+
       # - name: Build CVAT
       #   env:
       #     HOST_COVERAGE_DATA_DIR: ${{ github.workspace }}
