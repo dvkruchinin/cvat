@@ -29,11 +29,17 @@ jobs:
           # FILTER_REGEX_EXCLUDE: '(.*/3rdparty/.*|.*/engine/js/cvat-core.min.js|.*/engine/js/unzip_imgs.js)'
           FILTER_REGEX_INCLUDE: 'tests/cypress/plugin'
           OUTPUT_FORMAT: 'tap'
-          OUTPUT_FOLDER: './linter-report'
+          OUTPUT_FOLDER: 'linter-report'
           VALIDATE_EDITORCONFIG: false
           VALIDATE_JSCPD: false
           VALIDATE_PYTHON_ISORT: false
           JAVASCRIPT_DEFAULT_STYLE: 'prettier'
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: linters_check
+          path: linter-report
 
       # - name: Build CVAT
       #   env:
