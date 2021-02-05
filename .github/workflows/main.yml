@@ -26,8 +26,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LINTER_RULES_PATH: /
           # FILTER_REGEX_EXCLUDE: '(.*/3rdparty/.*|.*/engine/js/cvat-core.min.js|.*/engine/js/unzip_imgs.js)'
-          FILTER_REGEX_INCLUDE: './tests'
+          FILTER_REGEX_INCLUDE: 'tests/cypress'
           VALIDATE_EDITORCONFIG: false
+          VALIDATE_JSCPD: false
+          VALIDATE_PYTHON_ISORT: false
           JAVASCRIPT_DEFAULT_STYLE: 'prettier'
 
       # - name: Build CVAT
