@@ -17,6 +17,9 @@ jobs:
             node-version: 12
       - name: Bandit check
         uses: jpetrucciani/bandit-check@master
+        continue-on-error: true
+      - name: Python Linter
+        uses: sunnysid3up/python-linter@master
       # - name: Build CVAT
       #   env:
       #     HOST_COVERAGE_DATA_DIR: ${{ github.workspace }}
