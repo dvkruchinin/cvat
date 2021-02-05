@@ -16,8 +16,14 @@ jobs:
       - uses: actions/setup-node@v2
         with:
             node-version: 12
-      - name: Lint Code Base
+      - name: ESLint Code Base
         uses: bradennapier/eslint-plus-action@v3.4.2
+        env:
+          issueSummary: false
+      - name: Bandit Code Base
+        uses: jpetrucciani/bandit-check@master
+        with:
+          path: '.'
       # - name: Build CVAT
       #   env:
       #     HOST_COVERAGE_DATA_DIR: ${{ github.workspace }}
