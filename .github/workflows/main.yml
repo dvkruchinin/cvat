@@ -28,6 +28,8 @@ jobs:
           LINTER_RULES_PATH: /
           # FILTER_REGEX_EXCLUDE: '(.*/3rdparty/.*|.*/engine/js/cvat-core.min.js|.*/engine/js/unzip_imgs.js)'
           FILTER_REGEX_INCLUDE: 'tests/cypress/plugin'
+          OUTPUT_FORMAT: 'tap'
+          OUTPUT_FOLDER: './linter-report'
           VALIDATE_EDITORCONFIG: false
           VALIDATE_JSCPD: false
           VALIDATE_PYTHON_ISORT: false
