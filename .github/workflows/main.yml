@@ -15,22 +15,23 @@ jobs:
       - uses: actions/setup-node@v2
         with:
             node-version: 12
+      - name: 'Npm install'
+        run: |
+          npm install
+          cd cvat-canvas && npm install && cd ..
+          cd cvat-canvas3d && npm install && cd ..
+          cd cvat-core && npm install && cd ..
+          cd cvat-ui && npm install && cd ..
+
       - name: Bandit check
         uses: jpetrucciani/bandit-check@master
         continue-on-error: true
-      - name: Super-Linter
-        uses: github/super-linter@v3.14.0
-        env:
-          # VALIDATE_ALL_CODEBASE: false
-          DEFAULT_BRANCH: 'develop'
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LINTER_RULES_PATH: /
-          # FILTER_REGEX_EXCLUDE: '(.*/3rdparty/.*|.*/engine/js/cvat-core.min.js|.*/engine/js/unzip_imgs.js)'
-          FILTER_REGEX_INCLUDE: 'tests/cypress'
-          VALIDATE_EDITORCONFIG: false
-          VALIDATE_JSCPD: false
-          VALIDATE_PYTHON_ISORT: false
-          JAVASCRIPT_DEFAULT_STYLE: 'prettier'
+      - name: Run linters
+        uses: wearerequired/lint-action@v1.7.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          eslint: true
+          prettier: true
 
       # - name: Build CVAT
       #   env:
