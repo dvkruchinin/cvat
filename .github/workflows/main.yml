@@ -24,7 +24,10 @@ jobs:
         with:
           issueSummary: false
       - name: PyLint
-        uses: ricardochaves/python-lint@v1.3.0
+        uses: kolonialno/pylint-action
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          diff-against-branch: develop
 
 
       # - name: Upload artifact
