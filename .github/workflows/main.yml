@@ -16,33 +16,12 @@ jobs:
         with:
             node-version: 12
 
+      - name: ESLint
+        uses: bradennapier/eslint-plus-action@v3
+        with:
+          issueSummary: false
       - name: Bandit check
         uses: jpetrucciani/bandit-check@master
-        continue-on-error: true
-      # - name: ESLint
-      #   uses: bradennapier/eslint-plus-action@v3
-      #   with:
-      #     issueSummary: false
-      - name: Super-Linter
-        uses: github/super-linter@v3.14.0
-        env:
-          # VALIDATE_ALL_CODEBASE: false
-          DEFAULT_BRANCH: 'develop'
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LINTER_RULES_PATH: /
-          # FILTER_REGEX_EXCLUDE: '(.*/3rdparty/.*|.*/engine/js/cvat-core.min.js|.*/engine/js/unzip_imgs.js)'
-          FILTER_REGEX_INCLUDE: 'tests/cypress'
-          # OUTPUT_FORMAT: 'tap'
-          OUTPUT_FOLDER: 'linter-report'
-          VALIDATE_EDITORCONFIG: false
-          VALIDATE_JSCPD: false
-          VALIDATE_PYTHON_ISORT: false
-          JAVASCRIPT_DEFAULT_STYLE: 'prettier'
-      - name: Upload artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: linters_check
-          path: linter-report
 
       # - name: Build CVAT
       #   env:
