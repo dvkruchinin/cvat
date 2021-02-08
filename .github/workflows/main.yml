@@ -20,6 +20,12 @@ jobs:
         uses: bradennapier/eslint-plus-action@v3
         with:
           issueSummary: false
+
+      - name: Python Linter
+        uses: sunnysid3up/python-linter@v0.1-beta.7
+        with:
+          django: true
+
       - name: Bandit check
         uses: jpetrucciani/bandit-check@master
 
