@@ -1,0 +1,14 @@
+name: Linters check
+on: pull_request
+jobs:
+  linters_check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+            node-version: 12
+      - name: ESlint
+        run: |
+          for folders in `find -maxdepth 1 -name "cvat-*" -type d`; do cd $folders && npm ci && cd ..; done
+          for i in `git diff-tree --no-commit-id --name-only -r HEAD`; do npx eslint --quiet --output-file ./linter_reports/eslint_check.html --format html $i; done
