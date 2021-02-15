@@ -12,12 +12,10 @@ jobs:
         run: |
           for folders in `find -maxdepth 1 -name "cvat-*" -type d`; do cd $folders && npm ci && cd ..; done
           mkdir -p linter_reports
-          ls -la ./
 
       - name: ESlint check
         run: |
           npx eslint `git diff-tree --no-commit-id --name-only -r HEAD` --output-file ./linter_reports/eslint_check.html --format html
-          ls -la linter_reports
 
       - name: Upload artifacts
         if: always()
