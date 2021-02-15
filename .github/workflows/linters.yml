@@ -8,10 +8,17 @@ jobs:
       - uses: actions/setup-node@v2
         with:
             node-version: 12
-      - name: ESlint
+      - name: Install node modules and create reports folder
         run: |
           for folders in `find -maxdepth 1 -name "cvat-*" -type d`; do cd $folders && npm ci && cd ..; done
-          for i in `git diff-tree --no-commit-id --name-only -r HEAD`; do npx eslint --output-file ./linter_reports/eslint_check.html --format html $i; done
+          mkdir -p linter_reports
+          ls -la ./
+
+      - name: ESlint check
+        run: |
+          npx eslint `git diff-tree --no-commit-id --name-only -r HEAD` --output-file ./linter_reports/eslint_check.html --format html
+          ls -la linter_reports
+
       - name: Upload artifacts
         if: always()
         uses: actions/upload-artifact@v2
