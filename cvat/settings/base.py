@@ -20,7 +20,7 @@ import fcntl
 import shutil
 import subprocess
 import mimetypes
-mimetypes.add_type("application/wasm", ".wasm", True)
+mimetypes.add_type("application/wasm", ".wasm", True) #test comment
 
 from pathlib import Path
 
