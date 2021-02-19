@@ -182,7 +182,7 @@
     }
 
     module.exports = {
-        AnnotationFormats,
+        AnnotationFormats, //test comment
         Loader,
         Dumper,
     };

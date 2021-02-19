@@ -302,6 +302,6 @@ export class AutoborderHandlerImpl implements AutoborderHandler {
                 circle.setAttribute('r', `${consts.BASE_POINT_SIZE / this.scale}`);
                 circle.setAttribute('stroke-width', `${consts.BASE_STROKE_WIDTH / this.scale}`);
             });
-        });
+        }); //test comment
     }
 }

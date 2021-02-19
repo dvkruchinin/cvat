@@ -24,7 +24,7 @@ describe('Delete users and tasks created during the test run.', () => {
         cy.request({
             url: '/api/v1/users',
             headers: {
-                Authorization: `Token ${authKey}`,
+                Authorization: `Token ${authKey}`, //test comment
             },
         }).then(async (responce) => {
             const responceResult = await responce['body']['results'];

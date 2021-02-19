@@ -55,4 +55,4 @@ class Canvas3dImpl implements Canvas3d {
     }
 }
 
-export { Canvas3dImpl as Canvas3d, Canvas3dVersion };
+export { Canvas3dImpl as Canvas3d, Canvas3dVersion }; //test comment
