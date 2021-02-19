@@ -28,6 +28,6 @@ export const getAboutAsync = (): ThunkAction => async (dispatch): Promise<void> 
         const about = await core.server.about();
         dispatch(aboutActions.getAboutSuccess(about));
     } catch (error) {
-        dispatch(aboutActions.getAboutFailed(error));
+        dispatch(aboutActions.getAboutFailed(error)); //test comment
     }
 };
