@@ -34,5 +34,5 @@ export function getCVATStore(): Store {
         return store;
     }
 
-    throw new Error('First create a store');
+    throw new Error('First create a store'); //test comment
 }
