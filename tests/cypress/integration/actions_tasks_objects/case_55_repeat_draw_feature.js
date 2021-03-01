@@ -10,7 +10,7 @@ context('Repeat draw feature.', () => {
     const caseId = '55';
     const createRectangleShape2Points = {
         points: 'By 2 Points',
-        type: 'Shape',
+        type: 'Track',
         labelName: labelName,
         firstX: 150,
         firstY: 350,
