@@ -12,9 +12,7 @@
   },
   "testFiles": [
     "auth_page.js",
-    "actions_tasks_objects/**/*",
-    "actions_users/**/*",
-    "actions_projects/**/*",
+    "actions_tasks_objects/case_55_repeat_draw_feature.js",
     "remove_users_tasks_projects.js"
   ]
 }
