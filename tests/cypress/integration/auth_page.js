@@ -10,7 +10,7 @@ describe('Check server availability', () => {
     });
 
     it('"/auth/login" contains in the URL', () => {
-        cy.url().should('include', '/auth/login');
+        cy.url().should('include', '/auth/loginn');
     });
 
     it('"Sign in" button is exists', () => {
