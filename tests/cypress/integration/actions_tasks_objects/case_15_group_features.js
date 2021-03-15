@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Intel Corporation
+// Copyright (C) 2020-2021 Intel Corporation
 //
 // SPDX-License-Identifier: MIT
 
@@ -70,12 +70,20 @@ context('Group features', () => {
         cy.saveLocalStorage();
     });
 
-    function groupObjects(objectsArray) {
+    function groupObjects(objectsArray, cancelGrouping) {
         cy.get('.cvat-group-control').click();
         for (const shapeToGroup of objectsArray) {
-            cy.get(shapeToGroup).click();
+            cy.get(shapeToGroup).click().should('have.class', 'cvat_canvas_shape_grouping');
         }
+        cancelGrouping ? cy.get('body').type('{Esc}') : cy.get('.cvat-group-control').click();
+    }
+
+    function unGroupObjects(objectsArray) {
         cy.get('.cvat-group-control').click();
+        for (const shapeToGroup of objectsArray) {
+            cy.get(shapeToGroup).click().should('have.class', 'cvat_canvas_shape_grouping');
+        }
+        cy.get('body').type('{Shift}g');
     }
 
     function changeGroupColor(object, color) {
@@ -89,6 +97,21 @@ context('Group features', () => {
                 cy.contains('Change group color').click();
             });
         cy.changeColorViaBadge(color);
+    }
+
+    function checkShapesFill(equal) {
+        for (const groupedShape of shapeArray) {
+            cy.get(groupedShape)
+                .should('have.css', 'fill')
+                .then(($shapesGroupColor) => {
+                    if (equal) {
+                        expect($shapesGroupColor).to.be.equal(defaultGroupColorRgb);
+                    } else {
+                        expect($shapesGroupColor).to.not.equal(defaultGroupColorRgb);
+                        shapesGroupColor = $shapesGroupColor;
+                    }
+                });
+        }
     }
 
     describe(`Testing case "${caseId}"`, () => {
@@ -123,16 +146,10 @@ context('Group features', () => {
         });
 
         it('With group button unite two shapes. They have corresponding colors.', () => {
-            groupObjects(shapeArray);
-            for (const groupedShape of shapeArray) {
-                cy.get(groupedShape)
-                    .should('have.css', 'fill')
-                    .then(($shapesGroupColor) => {
-                        // expected rgb(250, 50, 83) to not equal rgb(224, 224, 224)
-                        expect($shapesGroupColor).to.not.equal(defaultGroupColorRgb);
-                        shapesGroupColor = $shapesGroupColor;
-                    });
-            }
+            groupObjects(shapeArray, true); // Reset grouping
+            checkShapesFill(true);
+            groupObjects(shapeArray); // Group
+            checkShapesFill(false);
             for (const objectSideBarShape of shapeSidebarItemArray) {
                 cy.get(objectSideBarShape)
                     .should('have.css', 'background-color')
@@ -143,6 +160,16 @@ context('Group features', () => {
                         expect($bColorobjectSideBarShape).to.be.contain(shapesGroupColor.match(/\d+, \d+, \d+/));
                     });
             }
+            unGroupObjects(shapeArray); // Ungroup
+            checkShapesFill(true);
+            // Start grouping. Cancel grouping via click to the same shape.
+            cy.get('.cvat-group-control').click();
+            cy.get(shapeArray[0])
+                .click()
+                .should('have.class', 'cvat_canvas_shape_grouping')
+                .click()
+                .should('not.have.class', 'cvat_canvas_shape_grouping');
+            cy.get('body').type('{Esc}'); // Cancel grouping
         });
 
         it('With group button unite two track. They have corresponding colors.', () => {
