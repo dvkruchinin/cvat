@@ -49,6 +49,13 @@ context('Canvas 3D functionality. Basic actions.', () => {
         compareImages(`${screenshotNameBefore}.png`, `${screenshotNameAfter}.png`);
     }
 
+    function testContextImage() {
+        cy.get('.cvat-contextImage-show').should('exist').and('be.visible');
+        cy.get('[data-icon="camera"]').click(); // Context image hide
+        cy.get('.cvat-contextImage-show').should('not.exist');
+        cy.get('[data-icon="camera"]').click(); // Context image show
+    }
+
     before(() => {
         cy.openTaskJob(taskName);
     });
@@ -120,9 +127,11 @@ context('Canvas 3D functionality. Basic actions.', () => {
             cy.get('.cvat-player-last-button').click();
             cy.checkFrameNum(2);
             cy.get('.cvat-player-filename-wrapper').should('contain.text', '000003.pcd');
+            testContextImage(); // Check context image on the last frame
             cy.get('.cvat-player-first-button').click();
             cy.checkFrameNum(0);
             cy.get('.cvat-player-filename-wrapper').should('contain.text', '000001.pcd');
+            testContextImage(); // Check context image on the firts frame
             cy.get('.cvat-player-forward-button').click();
             cy.checkFrameNum(2);
             cy.get('.cvat-player-filename-wrapper').should('contain.text', '000003.pcd');
@@ -132,6 +141,7 @@ context('Canvas 3D functionality. Basic actions.', () => {
             cy.get('.cvat-player-next-button').click();
             cy.checkFrameNum(1);
             cy.get('.cvat-player-filename-wrapper').should('contain.text', '000002.pcd');
+            testContextImage(); // Check context image on the second frame
             cy.get('.cvat-player-previous-button').click();
             cy.checkFrameNum(0);
             cy.get('.cvat-player-filename-wrapper').should('contain.text', '000001.pcd');
