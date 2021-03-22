@@ -58,18 +58,26 @@ context('Canvas 3D functionality. Basic actions.', () => {
             getViewWidthHeight('.cvat-canvas3d-frontview', widthHightArrAfterResize);
         });
 
-        it('Checking for resizing elements.', () => {
+        it('Checking for elements resizing.', () => {
             expect(widthHightArrBeforeResize[0][0]).to.be.equal(widthHightArrAfterResize[0][0]); // Width of cvat-canvas3d-perspective before and after didn't change
-            expect(widthHightArrBeforeResize[0][1]).not.be.equal(widthHightArrAfterResize[0][1]); // Height of cvat-canvas3d-perspective is changed
+            expect(widthHightArrBeforeResize[0][1]).not.be.equal(widthHightArrAfterResize[0][1]); // Height of cvat-canvas3d-perspective changed
             expect(widthHightArrAfterResize[1][1])
                 .to.be.equal(widthHightArrAfterResize[2][1])
-                .to.be.equal(widthHightArrAfterResize[3][1]); // Top/side/front has equal height
-            expect(widthHightArrBeforeResize[1][0]).not.be.equal(widthHightArrAfterResize[1][0]); // Height of cvat-canvas3d-topview is changed
-            expect(widthHightArrBeforeResize[2][0]).not.be.equal(widthHightArrAfterResize[2][0]); // Height of cvat-canvas3d-sideview is changed
-            expect(widthHightArrBeforeResize[3][0]).not.be.equal(widthHightArrAfterResize[3][0]); // Height of cvat-canvas3d-frontview is changed
-            expect(widthHightArrBeforeResize[1][1]).not.be.equal(widthHightArrAfterResize[1][1]); // Width of cvat-canvas3d-topview is changed
-            expect(widthHightArrBeforeResize[2][1]).not.be.equal(widthHightArrAfterResize[2][1]); // Width of cvat-canvas3d-sideview is changed
-            expect(widthHightArrBeforeResize[3][1]).not.be.equal(widthHightArrAfterResize[3][1]); // Width of cvat-canvas3d-frontview is changed
+                .to.be.equal(widthHightArrAfterResize[3][1]); // Top/side/front has equal height after changes
+            [
+                [widthHightArrBeforeResize[1][0], widthHightArrAfterResize[1][0]],
+                [widthHightArrBeforeResize[2][0], widthHightArrAfterResize[2][0]],
+                [widthHightArrBeforeResize[3][0], widthHightArrAfterResize[3][0]],
+            ].forEach(([widthBefore, widthAfter]) => {
+                expect(widthBefore).not.be.equal(widthAfter); // Width of top/side/front changed
+            });
+            [
+                [widthHightArrBeforeResize[1][1], widthHightArrAfterResize[1][1]],
+                [widthHightArrBeforeResize[2][1], widthHightArrAfterResize[2][1]],
+                [widthHightArrBeforeResize[3][1], widthHightArrAfterResize[3][1]],
+            ].forEach(([heightBefore, heightAfter]) => {
+                expect(heightBefore).not.be.equal(heightAfter); // Height of top/side/front changed
+            });
         });
     });
 });
