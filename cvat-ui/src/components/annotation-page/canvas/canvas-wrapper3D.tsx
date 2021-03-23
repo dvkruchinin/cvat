@@ -257,16 +257,16 @@ const CanvasWrapperComponent = (props: Props): ReactElement => {
                 <button
                     onClick={() => screenKeyControl(CAMERA_ACTION.ROTATE_LEFT)}
                     type='button'
-                    className='cvat-canvas3d-perspective-arrow-directions-icons-bottom'
+                    className='cvat-canvas3d-perspective-arrow-directions-icons-left'
                 >
                     <ArrowLeftOutlined className='cvat-canvas3d-perspective-arrow-directions-icons-color' />
                 </button>
             </CVATTooltip>
-            <CVATTooltip title='Arrow Bottom' placement='topRight'>
+            <CVATTooltip title='Arrow Down' placement='topRight'>
                 <button
                     onClick={() => screenKeyControl(CAMERA_ACTION.TILT_DOWN)}
                     type='button'
-                    className='cvat-canvas3d-perspective-arrow-directions-icons-bottom'
+                    className='cvat-canvas3d-perspective-arrow-directions-icons-down'
                 >
                     <ArrowDownOutlined className='cvat-canvas3d-perspective-arrow-directions-icons-color' />
                 </button>
@@ -275,7 +275,7 @@ const CanvasWrapperComponent = (props: Props): ReactElement => {
                 <button
                     onClick={() => screenKeyControl(CAMERA_ACTION.ROTATE_RIGHT)}
                     type='button'
-                    className='cvat-canvas3d-perspective-arrow-directions-icons-bottom'
+                    className='cvat-canvas3d-perspective-arrow-directions-icons-right'
                 >
                     <ArrowRightOutlined className='cvat-canvas3d-perspective-arrow-directions-icons-color' />
                 </button>
@@ -289,7 +289,7 @@ const CanvasWrapperComponent = (props: Props): ReactElement => {
                 <button
                     onClick={() => screenKeyControl(CAMERA_ACTION.MOVE_UP)}
                     type='button'
-                    className='cvat-canvas3d-perspective-directions-icon'
+                    className='cvat-canvas3d-perspective-directions-icon-move-up'
                 >
                     U
                 </button>
@@ -298,7 +298,7 @@ const CanvasWrapperComponent = (props: Props): ReactElement => {
                 <button
                     onClick={() => screenKeyControl(CAMERA_ACTION.ZOOM_IN)}
                     type='button'
-                    className='cvat-canvas3d-perspective-directions-icon'
+                    className='cvat-canvas3d-perspective-directions-icon-zoom-in'
                 >
                     I
                 </button>
@@ -307,7 +307,7 @@ const CanvasWrapperComponent = (props: Props): ReactElement => {
                 <button
                     onClick={() => screenKeyControl(CAMERA_ACTION.MOVE_DOWN)}
                     type='button'
-                    className='cvat-canvas3d-perspective-directions-icon'
+                    className='cvat-canvas3d-perspective-directions-icon-move-down'
                 >
                     O
                 </button>
@@ -317,7 +317,7 @@ const CanvasWrapperComponent = (props: Props): ReactElement => {
                 <button
                     onClick={() => screenKeyControl(CAMERA_ACTION.MOVE_LEFT)}
                     type='button'
-                    className='cvat-canvas3d-perspective-directions-icon'
+                    className='cvat-canvas3d-perspective-directions-icon-move-left'
                 >
                     J
                 </button>
@@ -326,7 +326,7 @@ const CanvasWrapperComponent = (props: Props): ReactElement => {
                 <button
                     onClick={() => screenKeyControl(CAMERA_ACTION.ZOOM_OUT)}
                     type='button'
-                    className='cvat-canvas3d-perspective-directions-icon'
+                    className='cvat-canvas3d-perspective-directions-icon-zoom-out'
                 >
                     K
                 </button>
@@ -335,7 +335,7 @@ const CanvasWrapperComponent = (props: Props): ReactElement => {
                 <button
                     onClick={() => screenKeyControl(CAMERA_ACTION.MOVE_RIGHT)}
                     type='button'
-                    className='cvat-canvas3d-perspective-directions-icon'
+                    className='cvat-canvas3d-perspective-directions-icon-move-right'
                 >
                     L
                 </button>
