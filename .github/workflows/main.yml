@@ -37,7 +37,7 @@ jobs:
         run: |
           cd ./tests
           npm ci
-          npx cypress run --headless --browser chrome
+          DEBUG=cypress:* npx cypress run --headless --browser chrome
       - name: Uploading cypress screenshots as an artifact
         if: failure()
         uses: actions/upload-artifact@v2

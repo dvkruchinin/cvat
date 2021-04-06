@@ -11,11 +11,6 @@
     "password": "12qwaszx"
   },
   "testFiles": [
-    "auth_page.js",
-    "actions_tasks_objects/**/*.js",
-    "actions_users/**/*.js",
-    "actions_projects/**/*.js",
-    "canvas3d_functionality/*.js",
-    "remove_users_tasks_projects.js"
+    "canvas3d_functionality/case_56_canvas3d_functionality_basic_actions.js"
   ]
 }
