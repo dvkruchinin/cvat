@@ -10,6 +10,7 @@
     "email": "admin@localhost.company",
     "password": "12qwaszx"
   },
+  "projectId": "5w7118",
   "testFiles": [
     "auth_page.js",
     "actions_tasks_objects/**/*.js",
