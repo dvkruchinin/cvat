@@ -3,7 +3,7 @@ on:
   push:
   pull_request:
   workflow_run:
-    workflows: ["CI", "Linter"]
+    workflows: ["CI", "Linter"] #comment
     types:
       - requested
 jobs:
