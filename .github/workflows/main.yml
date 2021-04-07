@@ -37,7 +37,7 @@ jobs:
         run: |
           cd ./tests
           npm ci
-          npx cypress run --headless --browser chrome
+          npx cypress run --headless --browser chrome --record --key ${{ secrets.CYPRESS_DASHBOARD_SECRET }} --parallel
       - name: Uploading cypress screenshots as an artifact
         if: failure()
         uses: actions/upload-artifact@v2
