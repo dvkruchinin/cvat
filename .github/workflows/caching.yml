@@ -1,0 +1,62 @@
+name: Cache
+on:
+  push:
+    branches:
+      - 'master'
+      - 'develop'
+  pull_request:
+    branches:
+      - '*'
+jobs:
+  Build_CVAT:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        id: cache-cvat
+        env:
+          cache-name: cvat_server
+        with:
+          path: /tmp/cvat_cache
+          key: ${{ runner.os }}-build-${{ env.cache-name }}
+          restore-keys: |
+            ${{ runner.os }}-build-
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1.1.2
+        with:
+          install: true
+
+      - name: Cache CVAT server
+        if: steps.cache-cvat.outputs.cache-hit != 'true'
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          cache-from: type=local,src=/tmp/cvat_cache
+          cache-to: type=local,dest=/tmp/cvat_cache-new
+          tags: openvino/cvat_server:latest
+
+      - name: Build CVAT ci
+        if: steps.cache-cvat.outputs.cache-hit != 'true'
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile.ci
+          cache-from: type=local,src=/tmp/cvat_cache
+          cache-to: type=local,dest=/tmp/cvat_cache-new
+          tags: cvat_ci:latest
+
+      - name: Build CVAT UI
+        if: steps.cache-cvat.outputs.cache-hit != 'true'
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile.ui
+          cache-from: type=local,src=/tmp/cvat_cache
+          cache-to: type=local,dest=/tmp/cvat_cache-new
+          tags: openvino/cvat_ui:latest
+
+      - name: Move cache
+        run: |
+          rm -rf /tmp/cvat_cache
+          mv /tmp/cvat_cache-new /tmp/cvat_cache
