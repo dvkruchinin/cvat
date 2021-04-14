@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
         env:
-          cache-name: cvat_cache
+          cache-name: cvat_cachev2
         with:
           path: /tmp/cvat_cache
           key: ${{ runner.os }}-build-${{ env.cache-name }}
@@ -51,6 +51,6 @@ jobs:
 
       - name: Moving cache
         run: |
-          ls -la /tmp/cvat_cache
+          ls -R -la /tmp/cvat_cache
           rm -rf /tmp/cvat_cache
           mv /tmp/cvat_cache-new /tmp/cvat_cache
