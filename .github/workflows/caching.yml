@@ -12,7 +12,7 @@ jobs:
       - uses: actions/cache@v2
         id: cache-cvat
         env:
-          cache-name: cvat_server
+          cache-name: cvat_cache
         with:
           path: /tmp/cvat_cache
           key: ${{ runner.os }}-build-${{ env.cache-name }}
@@ -30,30 +30,30 @@ jobs:
           context: .
           file: ./Dockerfile
           cache-from: type=local,src=/tmp/cvat_cache
-          cache-to: type=local,dest=/tmp/cvat_cache-new
+          cache-to: type=local,dest=/tmp/cvat_cache-server
           tags: openvino/cvat_server:latest
 
-      - name: Caching CVAT ci
-        if: steps.cache-cvat.outputs.cache-hit != 'true'
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: ./Dockerfile.ci
-          cache-from: type=local,src=/tmp/cvat_cache
-          cache-to: type=local,dest=/tmp/cvat_cache-new
-          tags: cvat_ci:latest
+      # - name: Caching CVAT ci
+      #   if: steps.cache-cvat.outputs.cache-hit != 'true'
+      #   uses: docker/build-push-action@v2
+      #   with:
+      #     context: .
+      #     file: ./Dockerfile.ci
+      #     cache-from: type=local,src=/tmp/cvat_cache
+      #     cache-to: type=local,dest=/tmp/cvat_cache-ci
+      #     tags: cvat_ci:latest
 
-      - name: Caching CVAT UI
-        if: steps.cache-cvat.outputs.cache-hit != 'true'
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: ./Dockerfile.ui
-          cache-from: type=local,src=/tmp/cvat_cache
-          cache-to: type=local,dest=/tmp/cvat_cache-new
-          tags: openvino/cvat_ui:latest
+      # - name: Caching CVAT UI
+      #   if: steps.cache-cvat.outputs.cache-hit != 'true'
+      #   uses: docker/build-push-action@v2
+      #   with:
+      #     context: .
+      #     file: ./Dockerfile.ui
+      #     cache-from: type=local,src=/tmp/cvat_cache
+      #     cache-to: type=local,dest=/tmp/cvat_cache-ui
+      #     tags: openvino/cvat_ui:latest
 
       - name: Moving cache
         run: |
           rm -rf /tmp/cvat_cache
-          mv /tmp/cvat_cache-new /tmp/cvat_cache
+          mv /tmp/cvat_cache-server /tmp/cvat_cache
