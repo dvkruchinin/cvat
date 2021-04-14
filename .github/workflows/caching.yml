@@ -28,7 +28,7 @@ jobs:
           context: .
           file: ./Dockerfile
           cache-from: type=local,src=/tmp/cvat_cache
-          cache-to: type=local,dest=/tmp/cvat_cache-server
+          cache-to: type=local,dest=/tmp/cvat_cache-new
           tags: openvino/cvat_server:latest
 
       - name: Caching CVAT ci
@@ -37,7 +37,7 @@ jobs:
           context: .
           file: ./Dockerfile.ci
           cache-from: type=local,src=/tmp/cvat_cache
-          cache-to: type=local,dest=/tmp/cvat_cache-ci
+          cache-to: type=local,dest=/tmp/cvat_cache-new
           tags: cvat_ci:latest
 
       - name: Caching CVAT UI
@@ -46,10 +46,11 @@ jobs:
           context: .
           file: ./Dockerfile.ui
           cache-from: type=local,src=/tmp/cvat_cache
-          cache-to: type=local,dest=/tmp/cvat_cache-ui
+          cache-to: type=local,dest=/tmp/cvat_cache-new
           tags: openvino/cvat_ui:latest
 
       - name: Moving cache
         run: |
+          ls -la /tmp/cvat_cache
           rm -rf /tmp/cvat_cache
-          cat /tmp/cvat_cache-server /tmp/cvat_cache-ci /tmp/cvat_cache-ui >> /tmp/cvat_cache
+          mv /tmp/cvat_cache-new /tmp/cvat_cache
