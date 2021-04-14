@@ -90,6 +90,14 @@ jobs:
       - uses: actions/setup-node@v2
         with:
             node-version: 12
+      - uses: actions/cache@v2
+        env:
+          cache-name: cvat_server
+        with:
+          path: /tmp/cvat_cache
+          key: ${{ runner.os }}-build-${{ env.cache-name }}
+          restore-keys: |
+            ${{ runner.os }}-build-
       - name: Code instrumentation
         run: |
           npm ci
