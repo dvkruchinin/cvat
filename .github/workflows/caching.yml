@@ -2,13 +2,10 @@ name: Cache
 on:
   push:
     branches:
-      - 'master'
-      - 'develop'
-  pull_request:
-    branches:
-      - '*'
+      - 'develop-tmp'
+
 jobs:
-  Build_CVAT:
+  Caching_CVAT:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -26,7 +23,7 @@ jobs:
         with:
           install: true
 
-      - name: Cache CVAT server
+      - name: Caching CVAT server
         if: steps.cache-cvat.outputs.cache-hit != 'true'
         uses: docker/build-push-action@v2
         with:
