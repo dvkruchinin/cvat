@@ -16,30 +16,20 @@ jobs:
         env:
           cache-name: cvat_server
         with:
-          path: /tmp/cvat_server_cache
+          path: /tmp/cvat_cache
           key: ${{ runner.os }}-build-${{ env.cache-name }}
           restore-keys: |
             ${{ runner.os }}-build-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1.1.2
-        with:
-          install: true
-      - name: Build CVAT server
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: ./Dockerfile
-          cache-from: type=local,src=/tmp/cvat_server_cache
-          cache-to: type=local,dest=/tmp/cvat_server_cache-new
-          tags: openvino/cvat_server:latest
       - name: For debug
         run: |
           docker images
           docker ps
-      - name: Move cache
+      - name: Build CVAT
+        env:
+          DOCKER_BUILDKIT: 1
+          COMPOSE_DOCKER_CLI_BUILD: 1
         run: |
-          rm -rf /tmp/cvat_server_cache
-          mv /tmp/cvat_server_cache-new /tmp/cvat_server_cache
+          docker-compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.ci.yml build
 
   Unit_testing:
       needs: Build_CVAT
@@ -50,16 +40,10 @@ jobs:
         env:
           cache-name: cvat_server
         with:
-          path: /tmp/cvat_server_cache
+          path: /tmp/cvat_cache
           key: ${{ runner.os }}-build-${{ env.cache-name }}
           restore-keys: |
             ${{ runner.os }}-build-
-      - uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: ./Dockerfile
-          cache-from: type=local,src=/tmp/cvat_server_cache
-          tags: openvino/cvat_server:latest
       - name: For debug
         run: |
           docker images
@@ -68,6 +52,8 @@ jobs:
         env:
           HOST_COVERAGE_DATA_DIR: ${{ github.workspace }}
           CONTAINER_COVERAGE_DATA_DIR: "/coverage_data"
+          DOCKER_BUILDKIT: 1
+          COMPOSE_DOCKER_CLI_BUILD: 1
         run: |
           docker-compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.ci.yml run cvat_ci /bin/bash -c 'coverage run -a manage.py test cvat/apps utils/cli && mv .coverage ${CONTAINER_COVERAGE_DATA_DIR}'
           docker-compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.ci.yml run cvat_ci /bin/bash -c 'cd cvat-data && npm ci && cd ../cvat-core && npm ci && npm run test && mv ./reports/coverage/lcov.info ${CONTAINER_COVERAGE_DATA_DIR} && chmod a+rwx ${CONTAINER_COVERAGE_DATA_DIR}/lcov.info'
@@ -102,20 +88,6 @@ jobs:
         run: |
           npm ci
           npm run coverage
-      - uses: actions/cache@v2
-        env:
-          cache-name: cvat_server
-        with:
-          path: /tmp/cvat_server_cache
-          key: ${{ runner.os }}-build-${{ env.cache-name }}
-          restore-keys: |
-            ${{ runner.os }}-build-
-      - uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: ./Dockerfile
-          cache-from: type=local,src=/tmp/cvat_server_cache
-          tags: openvino/cvat_server:latest
       - name: For debug
         run: |
           docker images
@@ -158,16 +130,10 @@ jobs:
       env:
         cache-name: cvat_server
       with:
-        path: /tmp/cvat_server_cache
+        path: /tmp/cvat_cache
         key: ${{ runner.os }}-build-${{ env.cache-name }}
         restore-keys: |
             ${{ runner.os }}-build-
-    - uses: docker/build-push-action@v2
-      with:
-        context: .
-        file: ./Dockerfile
-        cache-from: type=local,src=/tmp/cvat_server_cache
-        tags: openvino/cvat_server:latest
     - name: For debug
       run: |
         docker images
@@ -189,8 +155,9 @@ jobs:
         CONTAINER_COVERAGE_DATA_DIR: "/coverage_data"
         COVERALLS_SERVICE_NAME: github
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        DOCKER_BUILDKIT: 1
+        COMPOSE_DOCKER_CLI_BUILD: 1
       run: |
           npx nyc report --reporter=text-lcov >> ${HOST_COVERAGE_DATA_DIR}/lcov.info
-          docker images
           docker-compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.ci.yml run cvat_ci /bin/bash -c 'cd ${CONTAINER_COVERAGE_DATA_DIR} && coveralls-lcov -v -n lcov.info > ${CONTAINER_COVERAGE_DATA_DIR}/coverage.json'
           docker-compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.ci.yml run cvat_ci /bin/bash -c 'ln -s ${CONTAINER_COVERAGE_DATA_DIR}/.git . && ln -s ${CONTAINER_COVERAGE_DATA_DIR}/.coverage . && ln -s ${CONTAINER_COVERAGE_DATA_DIR}/coverage.json . && coveralls --merge=coverage.json'
