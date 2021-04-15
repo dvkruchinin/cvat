@@ -10,18 +10,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
-        env:
-          cache-name: cvat_cache
         with:
           path: /tmp/cvat_cache
-          key: ${{ runner.os }}-build-${{ env.cache-name }}
+          key: ${{ runner.os }}-build-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-build-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1.1.2
         with:
           install: true
-
       - name: Caching CVAT server
         uses: docker/build-push-action@v2
         with:
