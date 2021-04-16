@@ -26,7 +26,7 @@ jobs:
           file: ./Dockerfile
           cache-from: type=local,src=/tmp/cvat_cache
           cache-to: type=local,dest=/tmp/cvat_cache-new
-          tags: openvino/cvat_server:lastest
+          tags: openvino/cvat_server:latest
 
       # - name: Caching CVAT ci
       #   uses: docker/build-push-action@v2
@@ -35,7 +35,7 @@ jobs:
       #     file: ./Dockerfile.ci
       #     cache-from: type=local,src=/tmp/cvat_cache
       #     cache-to: type=local,dest=/tmp/cvat_cache-new
-      #     tags: cvat_ci
+      #     tags: cvat_ci:latest
 
       # - name: Caching CVAT UI
       #   uses: docker/build-push-action@v2
@@ -44,7 +44,7 @@ jobs:
       #     file: ./Dockerfile.ui
       #     cache-from: type=local,src=/tmp/cvat_cache
       #     cache-to: type=local,dest=/tmp/cvat_cache-new
-      #     tags: openvino/cvat_ui
+      #     tags: openvino/cvat_ui:latest
 
       - name: Moving cache
         run: |
