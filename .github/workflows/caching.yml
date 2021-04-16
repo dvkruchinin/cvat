@@ -16,18 +16,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-build-
 
-      # - name: Set up Docker Buildx
-      #   uses: docker/setup-buildx-action@v1.1.2
-      #   with:
-      #     install: true
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1.1.2
 
       - name: Caching CVAT server
         uses: docker/build-push-action@v2
         with:
           context: .
           file: ./Dockerfile
-          cache-from: type=local,src=/tmp/cvat_cache
-          cache-to: type=local,dest=/tmp/cvat_cache-new
+          cache-from: type=tar,src=/tmp/cvat_cache.tar
+          cache-to: type=tar,dest=/tmp/cvat_cache-new.tar
 
       # - name: Caching CVAT ci
       #   uses: docker/build-push-action@v2
@@ -52,4 +50,5 @@ jobs:
           docker images
           docker inspect openvino/cvat_server
           rm -rf /tmp/cvat_cache
-          mv /tmp/cvat_cache-new /tmp/cvat_cache
+          rm -rf /tmp/cvat_cache.tar
+          mv /tmp/cvat_cache-new.tar /tmp/cvat_cache.tar
