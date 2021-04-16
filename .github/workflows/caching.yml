@@ -27,6 +27,7 @@ jobs:
           cache-from: type=local,src=/tmp/cvat_cache
           cache-to: type=local,dest=/tmp/cvat_cache-new
           tags: openvino/cvat_server:latest
+          load: true
 
       # - name: Caching CVAT ci
       #   uses: docker/build-push-action@v2
