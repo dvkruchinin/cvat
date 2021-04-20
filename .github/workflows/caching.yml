@@ -29,7 +29,5 @@ jobs:
 
       - name: Moving cache
         run: |
-          docker images
-          docker inspect openvino/cvat_server
           rm -rf /tmp/cvat_cache
           mv /tmp/cvat_cache-new /tmp/cvat_cache
