@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - 'master'
-      - 'develop'
+      - 'develop-tmp'
   pull_request:
     branches:
       - '*'
