@@ -8,50 +8,99 @@ on:
     branches:
       - '*'
 jobs:
-  build:
+  # Build_Unit_testing:
+  #     runs-on: ubuntu-latest
+  #     steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Run unit tests
+  #       env:
+  #         HOST_COVERAGE_DATA_DIR: ${{ github.workspace }}
+  #         CONTAINER_COVERAGE_DATA_DIR: "/coverage_data"
+  #       run: |
+  #         docker-compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.ci.yml build
+  #         docker-compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.ci.yml run cvat_ci /bin/bash -c 'coverage run -a manage.py test cvat/apps utils/cli && mv .coverage ${CONTAINER_COVERAGE_DATA_DIR}'
+  #         docker-compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.ci.yml run cvat_ci /bin/bash -c 'cd cvat-data && npm ci && cd ../cvat-core && npm ci && npm run test && mv ./reports/coverage/lcov.info ${CONTAINER_COVERAGE_DATA_DIR} && chmod a+rwx ${CONTAINER_COVERAGE_DATA_DIR}/lcov.info'
+  #     - uses: actions/upload-artifact@v2
+  #       with:
+  #         name: coverage_results
+  #         path: |
+  #           ${{ github.workspace }}/.coverage
+  #           ${{ github.workspace }}/lcov.info
+
+  E2E_testing:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        specs: ['actions_tasks', 'actions_objects', 'actions_users', 'actions_projects', 'canvas3d_functionality', 'issues_prs']
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
             node-version: 12
-      - name: Build CVAT
-        env:
-          HOST_COVERAGE_DATA_DIR: ${{ github.workspace }}
-          CONTAINER_COVERAGE_DATA_DIR: '/coverage_data'
-          DJANGO_SU_NAME: 'admin'
-          DJANGO_SU_EMAIL: 'admin@localhost.company'
-          DJANGO_SU_PASSWORD: '12qwaszx'
-        run: |
-          docker-compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.ci.yml build
-          docker-compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.ci.yml run cvat_ci /bin/bash -c 'coverage run -a manage.py test cvat/apps utils/cli && mv .coverage ${CONTAINER_COVERAGE_DATA_DIR}'
-          docker-compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.ci.yml run cvat_ci /bin/bash -c 'cd cvat-data && npm ci && cd ../cvat-core && npm ci && npm run test && mv ./reports/coverage/lcov.info ${CONTAINER_COVERAGE_DATA_DIR} && chmod a+rwx ${CONTAINER_COVERAGE_DATA_DIR}/lcov.info'
-          docker-compose up -d
-          docker exec -i cvat /bin/bash -c "echo \"from django.contrib.auth.models import User; User.objects.create_superuser('${DJANGO_SU_NAME}', '${DJANGO_SU_EMAIL}', '${DJANGO_SU_PASSWORD}')\" | python3 ~/manage.py shell"
       - name: Code instrumentation
         run: |
           npm ci
           npm run coverage
-          docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+      - name: Build develop env
+        env:
+          DJANGO_SU_NAME: 'admin'
+          DJANGO_SU_EMAIL: 'admin@localhost.company'
+          DJANGO_SU_PASSWORD: '12qwaszx'
+          API_ABOUT_PAGE: "localhost:3000/api/v1/server/about"
+        run: |
+          sudo apt-get update && sudo apt-get --no-install-recommends install -y build-essential curl redis-server python3-dev python3-pip python3-venv python3-tk libldap2-dev libsasl2-dev pkg-config libavformat-dev libavcodec-dev libavdevice-dev libavutil-dev libswscale-dev libswresample-dev libavfilter-dev
+          mkdir logs keys
+          python3 -m venv .env
+          . .env/bin/activate
+          pip install -U pip wheel setuptools
+          pip install -r cvat/requirements/development.txt
+          python manage.py migrate
+          python manage.py collectstatic
+          cd cvat-core && npm ci && cd ../cvat-ui && npm ci && npm start && cd ../
+          /bin/bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' ${API_ABOUT_PAGE})" != "401" ]]; do sleep 5; done'
+          /bin/bash -c "echo \"from django.contrib.auth.models import User; User.objects.create_superuser('${DJANGO_SU_NAME}', '${DJANGO_SU_EMAIL}', '${DJANGO_SU_PASSWORD}')\" | python3 ~/manage.py shell"          docker exec -i cvat /bin/bash -c "echo \"from django.contrib.auth.models import User; User.objects.create_superuser('${DJANGO_SU_NAME}', '${DJANGO_SU_EMAIL}', '${DJANGO_SU_PASSWORD}')\" | python3 ~/manage.py shell"
       - name: End-to-end testing
         run: |
           cd ./tests
           npm ci
-          npx cypress run --headless --browser chrome
+          npx cypress run --headless --browser chrome --config-file cypress-ci.json --spec 'cypress/integration/${{ matrix.specs }}/**/*.js'
+          mv ./.nyc_output/out.json ./.nyc_output/out_${{ matrix.specs }}.json
       - name: Uploading cypress screenshots as an artifact
         if: failure()
         uses: actions/upload-artifact@v2
         with:
-          name: cypress_screenshots
+          name: cypress_screenshots_${{ matrix.specs }}
           path: ${{ github.workspace }}/tests/cypress/screenshots
-      - name: Collect coverage data
-        env:
-          HOST_COVERAGE_DATA_DIR: ${{ github.workspace }}
-          CONTAINER_COVERAGE_DATA_DIR: "/coverage_data"
-          COVERALLS_SERVICE_NAME: github
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          mv ./tests/.nyc_output ./
-          npx nyc report --reporter=text-lcov >> ${HOST_COVERAGE_DATA_DIR}/lcov.info
-          docker-compose -f docker-compose.yml -f docker-compose.ci.yml run cvat_ci /bin/bash -c 'cd ${CONTAINER_COVERAGE_DATA_DIR} && coveralls-lcov -v -n lcov.info > ${CONTAINER_COVERAGE_DATA_DIR}/coverage.json'
-          docker-compose -f docker-compose.yml -f docker-compose.ci.yml run cvat_ci /bin/bash -c 'ln -s ${CONTAINER_COVERAGE_DATA_DIR}/.git . && ln -s ${CONTAINER_COVERAGE_DATA_DIR}/.coverage . && ln -s ${CONTAINER_COVERAGE_DATA_DIR}/coverage.json . && coveralls --merge=coverage.json'
+      - uses: actions/upload-artifact@v2
+        with:
+          name: coverage_results
+          path: ${{ github.workspace }}/tests/.nyc_output
+
+  # Coveralls:
+  #   runs-on: ubuntu-latest
+  #   needs: [Unit_testing, E2E_testing]
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Download coverage results
+  #       uses: actions/download-artifact@v2
+  #       with:
+  #         name: coverage_results
+  #     - name: Combine coverage results
+  #       run: |
+  #         mkdir -p ./nyc_output_tmp
+  #         mv ./out_*.json ./nyc_output_tmp
+  #         mkdir -p ./.nyc_output
+  #         npm ci
+  #         npx nyc merge ./nyc_output_tmp ./.nyc_output/out.json
+  #     - name: Send results to Coveralls
+  #       env:
+  #         HOST_COVERAGE_DATA_DIR: ${{ github.workspace }}
+  #         CONTAINER_COVERAGE_DATA_DIR: "/coverage_data"
+  #         COVERALLS_SERVICE_NAME: github
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       run: |
+  #           npx nyc report --reporter=text-lcov >> ${HOST_COVERAGE_DATA_DIR}/lcov.info
+  #           docker-compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.ci.yml build
+  #           docker-compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.ci.yml run cvat_ci /bin/bash -c 'cd ${CONTAINER_COVERAGE_DATA_DIR} && coveralls-lcov -v -n lcov.info > ${CONTAINER_COVERAGE_DATA_DIR}/coverage.json'
+  #           docker-compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.ci.yml run cvat_ci /bin/bash -c 'ln -s ${CONTAINER_COVERAGE_DATA_DIR}/.git . && ln -s ${CONTAINER_COVERAGE_DATA_DIR}/.coverage . && ln -s ${CONTAINER_COVERAGE_DATA_DIR}/coverage.json . && coveralls --merge=coverage.json'
