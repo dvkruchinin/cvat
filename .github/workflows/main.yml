@@ -81,6 +81,14 @@ jobs:
           cache-from: type=local,src=/tmp/cvat_cache
           tags: openvino/cvat_server:latest
           load: true
+      - name: Building CVAT UI image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile.ui
+          cache-from: type=local,src=/tmp/cvat_cache_ui
+          tags: openvino/cvat_ui:latest
+          load: true
       - name: Code instrumentation
         if: github.ref == 'refs/heads/develop-tmp'
         run: |
@@ -97,13 +105,17 @@ jobs:
           DJANGO_SU_PASSWORD: '12qwaszx'
           API_ABOUT_PAGE: "localhost:8080/api/v1/server/about"
         run: |
-          docker-compose up -d
+          docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
           /bin/bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' ${API_ABOUT_PAGE})" != "401" ]]; do sleep 5; done'
           docker exec -i cvat /bin/bash -c "echo \"from django.contrib.auth.models import User; User.objects.create_superuser('${DJANGO_SU_NAME}', '${DJANGO_SU_EMAIL}', '${DJANGO_SU_PASSWORD}')\" | python3 ~/manage.py shell"          docker exec -i cvat /bin/bash -c "echo \"from django.contrib.auth.models import User; User.objects.create_superuser('${DJANGO_SU_NAME}', '${DJANGO_SU_EMAIL}', '${DJANGO_SU_PASSWORD}')\" | python3 ~/manage.py shell"
           cd ./tests
           npm ci
-          npx cypress run --headless --browser chrome --spec 'cypress/integration/${{ matrix.specs }}/**/*.js'
-          mv ./.nyc_output/out.json ./.nyc_output/out_${{ matrix.specs }}.json
+          if [[ ${{ github.ref }} == 'refs/heads/develop-tmp' ]]; then
+            npx cypress run --headless --browser chrome --spec 'cypress/integration/${{ matrix.specs }}/**/*.js'
+            mv ./.nyc_output/out.json ./.nyc_output/out_${{ matrix.specs }}.json
+          else
+            npx cypress run --headless --browser chrome --env coverage=false --spec 'cypress/integration/${{ matrix.specs }}/**/*.js'
+          fi
       - name: Uploading cypress screenshots as an artifact
         if: failure()
         uses: actions/upload-artifact@v2
