@@ -65,11 +65,16 @@ jobs:
           URL_get_sha_default_branch="https://api.github.com/repos/${{ github.repository }}/git/ref/heads/${DEFAULT_BRANCH}"
           SHA=$(curl -s -X GET -G ${URL_get_sha_default_branch}  | jq .object.sha | tr -d '"')
           echo ::set-output name=sha::${SHA}
-      - name: Getting cache from the default branch
+      - name: Getting cache CVAT server from the default branch
         uses: actions/cache@v2
         with:
           path: /tmp/cvat_cache
           key: ${{ runner.os }}-build-${{ steps.get-sha.outputs.sha }}
+      - name: Getting cache CVAT UI from the default branch
+        uses: actions/cache@v2
+        with:
+          path: /tmp/cvat_cache_ui
+          key: ${{ runner.os }}-build-ui-${{ steps.get-sha.outputs.sha }}
       - uses: actions/setup-node@v2
         with:
             node-version: 12
