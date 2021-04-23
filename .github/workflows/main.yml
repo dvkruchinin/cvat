@@ -24,21 +24,26 @@ jobs:
       - name: Waiting a cache creation in the default branch
         run: |
           URL_runs="https://api.github.com/repos/${{ github.repository }}/actions/runs"
-          RUN_status=$(curl -s -X GET -G ${URL_runs} | jq -r '.workflow_runs[] | select((.head_sha == "${{ steps.get-sha.outputs.sha }}") and (.event == "push") and (.name == "Cache") and (.head_branch == "${{ steps.get-sha.outputs.default_branch }}")) | .status')
-          SLEEP=10
-          NUMBER_ATTEMPTS=30
-          while [[ ${RUN_status} != "completed" ]]; do
-            echo "Attempt number: ${NUMBER_ATTEMPTS}"
-            echo "Status of caching in the '${{ steps.get-sha.outputs.default_branch }}' branch: ${RUN_status}"
-            echo "sleep ${SLEEP}"
-            sleep ${SLEEP}
-            ((NUMBER_ATTEMPTS--))
-            if [[ ${NUMBER_ATTEMPTS} -eq 0 ]]; then
-              echo "Canceling a wait!"
-              echo "Probably the re-creation of the cache is not yet complete. Will continue working without the cache."
+          SLEEP=30
+          NUMBER_ATTEMPTS=10
+          while [[ ${NUMBER_ATTEMPTS} -gt 0 ]]; do
+            RUN_status=$(curl -s -X GET -G ${URL_runs} | jq -r '.workflow_runs[] | select((.head_sha == "${{ steps.get-sha.outputs.sha }}") and (.event == "push") and (.name == "Cache") and (.head_branch == "${{ steps.get-sha.outputs.default_branch }}")) | .status')
+            if [[ ${RUN_status} == "completed" ]]; then
+              echo "The cache creation on the '${{ steps.get-sha.outputs.default_branch }}' branch has finished. Status: ${RUN_status}"
               break
+            else
+              echo "The creation of the cache is not yet complete."
+              echo "There are still attempts to check the cache: ${NUMBER_ATTEMPTS}"
+              echo "Status of caching in the '${{ steps.get-sha.outputs.default_branch }}' branch: ${RUN_status}"
+              echo "sleep ${SLEEP}"
+              sleep ${SLEEP}
+              ((NUMBER_ATTEMPTS--))
             fi
           done
+          if [[ ${NUMBER_ATTEMPTS} -eq 0 ]]; then
+            echo "Number of attempts expired!"
+            echo "Probably the creation of the cache is not yet complete. Will continue working without the cache."
+          fi
       - name: Getting cache from the default branch
         uses: actions/cache@v2
         with:
@@ -88,21 +93,26 @@ jobs:
       - name: Waiting a cache creation in the default branch
         run: |
           URL_runs="https://api.github.com/repos/${{ github.repository }}/actions/runs"
-          RUN_status=$(curl -s -X GET -G ${URL_runs} | jq -r '.workflow_runs[] | select((.head_sha == "${{ steps.get-sha.outputs.sha }}") and (.event == "push") and (.name == "Cache") and (.head_branch == "${{ steps.get-sha.outputs.default_branch }}")) | .status')
-          SLEEP=10
-          NUMBER_ATTEMPTS=30
-          while [[ ${RUN_status} != "completed" ]]; do
-            echo "Attempt number: ${NUMBER_ATTEMPTS}"
-            echo "Status of caching in the '${{ steps.get-sha.outputs.default_branch }}' branch: ${RUN_status}"
-            echo "sleep ${SLEEP}"
-            sleep ${SLEEP}
-            ((NUMBER_ATTEMPTS--))
-            if [[ ${NUMBER_ATTEMPTS} -eq 0 ]]; then
-              echo "Canceling a wait!"
-              echo "Probably the re-creation of the cache is not yet complete. Will continue working without the cache."
+          SLEEP=30
+          NUMBER_ATTEMPTS=10
+          while [[ ${NUMBER_ATTEMPTS} -gt 0 ]]; do
+            RUN_status=$(curl -s -X GET -G ${URL_runs} | jq -r '.workflow_runs[] | select((.head_sha == "${{ steps.get-sha.outputs.sha }}") and (.event == "push") and (.name == "Cache") and (.head_branch == "${{ steps.get-sha.outputs.default_branch }}")) | .status')
+            if [[ ${RUN_status} == "completed" ]]; then
+              echo "The cache creation on the '${{ steps.get-sha.outputs.default_branch }}' branch has finished. Status: ${RUN_status}"
               break
+            else
+              echo "The creation of the cache is not yet complete."
+              echo "There are still attempts to check the cache: ${NUMBER_ATTEMPTS}"
+              echo "Status of caching in the '${{ steps.get-sha.outputs.default_branch }}' branch: ${RUN_status}"
+              echo "sleep ${SLEEP}"
+              sleep ${SLEEP}
+              ((NUMBER_ATTEMPTS--))
             fi
           done
+          if [[ ${NUMBER_ATTEMPTS} -eq 0 ]]; then
+            echo "Number of attempts expired!"
+            echo "Probably the creation of the cache is not yet complete. Will continue working without the cache."
+          fi
       - name: Getting cache CVAT server from the default branch
         uses: actions/cache@v2
         with:
