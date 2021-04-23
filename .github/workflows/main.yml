@@ -32,7 +32,7 @@ jobs:
             echo "Status of caching in the '${{ steps.get-sha.outputs.default_branch }}' branch: ${RUN_status}"
             echo "sleep ${SLEEP}"
             sleep ${SLEEP}
-            $((NUMBER_ATTEMPTS--))
+            ((NUMBER_ATTEMPTS--))
             if [[ ${NUMBER_ATTEMPTS} -eq 0 ]]; then
               echo "Canceling a wait!"
               echo "Probably the re-creation of the cache is not yet complete. Will continue working without the cache."
@@ -96,7 +96,7 @@ jobs:
             echo "Status of caching in the '${{ steps.get-sha.outputs.default_branch }}' branch: ${RUN_status}"
             echo "sleep ${SLEEP}"
             sleep ${SLEEP}
-            $((NUMBER_ATTEMPTS--))
+            ((NUMBER_ATTEMPTS--))
             if [[ ${NUMBER_ATTEMPTS} -eq 0 ]]; then
               echo "Canceling a wait!"
               echo "Probably the re-creation of the cache is not yet complete. Will continue working without the cache."
