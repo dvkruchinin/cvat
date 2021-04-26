@@ -2,9 +2,9 @@ FROM ubuntu:20.04 as build-image
 
 ARG http_proxy
 ARG https_proxy
-ARG no_proxy="nuclio,${no_proxy}"
+ARG no_proxy
 ARG socks_proxy
-ARG DJANGO_CONFIGURATION="production"
+ARG DJANGO_CONFIGURATION
 
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends install -yq \
@@ -53,9 +53,9 @@ FROM ubuntu:20.04
 
 ARG http_proxy
 ARG https_proxy
-ARG no_proxy="nuclio,${no_proxy}"
+ARG no_proxy
 ARG socks_proxy
-ARG TZ="Etc/UTC"
+ARG TZ
 
 ENV TERM=xterm \
     http_proxy=${http_proxy}   \
@@ -66,8 +66,8 @@ ENV TERM=xterm \
     LC_ALL='C.UTF-8' \
     TZ=${TZ}
 
-ARG USER="django"
-ARG DJANGO_CONFIGURATION="production"
+ARG USER
+ARG DJANGO_CONFIGURATION
 ENV DJANGO_CONFIGURATION=${DJANGO_CONFIGURATION}
 
 # Install necessary apt packages
@@ -153,7 +153,6 @@ WORKDIR ${HOME}
 
 RUN mkdir data share media keys logs /tmp/supervisord
 RUN python3 manage.py collectstatic
-RUN echo "All steps done!!"
 
 EXPOSE 8080
 ENTRYPOINT ["/usr/bin/supervisord"]
