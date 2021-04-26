@@ -57,6 +57,9 @@ jobs:
           cache-from: type=local,src=/tmp/cvat_cache_server
           tags: openvino/cvat_server:latest
           load: true
+      - name: docker images
+        run: |
+          docker images
       - name: Runing unit tests
         env:
           HOST_COVERAGE_DATA_DIR: ${{ github.workspace }}
@@ -142,6 +145,9 @@ jobs:
           cache-from: type=local,src=/tmp/cvat_cache_ui
           tags: openvino/cvat_ui:latest
           load: true
+      - name: docker images
+        run: |
+          docker images
       - name: Code instrumentation
         if: github.ref == 'refs/heads/develop-tmp'
         run: |
@@ -209,6 +215,9 @@ jobs:
           cache-from: type=local,src=/tmp/cvat_cache_server
           tags: openvino/cvat_server:latest
           load: true
+      - name: docker images
+        run: |
+          docker images
       - name: Downloading coverage results
         uses: actions/download-artifact@v2
         with:
