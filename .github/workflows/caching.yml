@@ -42,9 +42,9 @@ jobs:
           cache-from: type=local,src=/tmp/cvat_cache_ui
           cache-to: type=local,dest=/tmp/cvat_cache_ui-new
 
-      - name: Moving cache
-        run: |
-          rm -rf /tmp/cvat_cache
-          mv /tmp/cvat_cache-new /tmp/cvat_cache
-          rm -rf /tmp/cvat_cache_ui
-          mv /tmp/cvat_cache_ui-new /tmp/cvat_cache_ui
+      # - name: Moving cache
+      #   run: |
+      #     rm -rf /tmp/cvat_cache
+      #     mv /tmp/cvat_cache-new /tmp/cvat_cache
+      #     rm -rf /tmp/cvat_cache_ui
+      #     mv /tmp/cvat_cache_ui-new /tmp/cvat_cache_ui
