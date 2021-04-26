@@ -44,14 +44,7 @@ jobs:
 
       - name: Moving cache
         run: |
-          ls -la /tmp
-          ls -R -la /tmp/cvat_cache_server
-          ls -R -la /tmp/cvat_cache_ui
           rm -rf /tmp/cvat_cache_server
           mv /tmp/cvat_cache_server-new /tmp/cvat_cache_server
           rm -rf /tmp/cvat_cache_ui
           mv /tmp/cvat_cache_ui-new /tmp/cvat_cache_ui
-          echo "#########################"
-          ls -la /tmp
-          ls -R -la /tmp/cvat_cache_server
-          ls -R -la /tmp/cvat_cache_ui
