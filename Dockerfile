@@ -153,6 +153,7 @@ WORKDIR ${HOME}
 
 RUN mkdir data share media keys logs /tmp/supervisord
 RUN python3 manage.py collectstatic
+RUN echo "All steps done!!"
 
 EXPOSE 8080
 ENTRYPOINT ["/usr/bin/supervisord"]
