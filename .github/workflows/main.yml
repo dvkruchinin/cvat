@@ -49,6 +49,8 @@ jobs:
         with:
           path: /tmp/cvat_cache_server
           key: ${{ runner.os }}-build-server-${{ steps.get-sha.outputs.sha }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1.1.2
       - name: Building CVAT server image
         uses: docker/build-push-action@v2
         with:
@@ -60,6 +62,8 @@ jobs:
       - name: docker images
         run: |
           docker images
+          ls -la /tmp
+          ls -R -la /tmp/cvat_cache_server
       - name: Runing unit tests
         env:
           HOST_COVERAGE_DATA_DIR: ${{ github.workspace }}
@@ -129,6 +133,8 @@ jobs:
       - uses: actions/setup-node@v2
         with:
             node-version: 12
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1.1.2
       - name: Building CVAT server image
         uses: docker/build-push-action@v2
         with:
@@ -148,6 +154,9 @@ jobs:
       - name: docker images
         run: |
           docker images
+          ls -la /tmp
+          ls -R -la /tmp/cvat_cache_server
+          ls -R -la /tmp/cvat_cache_ui
       - name: Code instrumentation
         if: github.ref == 'refs/heads/develop-tmp'
         run: |
@@ -205,8 +214,10 @@ jobs:
       - name: Getting CVAT server cache from the default branch
         uses: actions/cache@v2
         with:
-          path: /tmp/cvat_cache
+          path: /tmp/cvat_cache_server
           key: ${{ runner.os }}-build-server-${{ steps.get-sha.outputs.sha }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1.1.2
       - name: Building CVAT server image
         uses: docker/build-push-action@v2
         with:
@@ -215,9 +226,6 @@ jobs:
           cache-from: type=local,src=/tmp/cvat_cache_server
           tags: openvino/cvat_server:latest
           load: true
-      - name: docker images
-        run: |
-          docker images
       - name: Downloading coverage results
         uses: actions/download-artifact@v2
         with:
