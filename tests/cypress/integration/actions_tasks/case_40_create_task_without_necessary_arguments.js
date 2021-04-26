@@ -36,8 +36,8 @@ context('Try to create a task without necessary arguments.', () => {
     describe(`Testing "${labelName}"`, () => {
         it('Try to create a task without any fields. A task is not created.', () => {
             cy.get('.cvat-create-task-submit-section').click();
-            cy.get('.cvat-notification-create-task-fail').should('exist');
-            cy.closeNotification('.cvat-notification-create-task-fail');
+            cy.get('.cvat-notification-create-task-fail-2').should('exist');
+            cy.closeNotification('.cvat-notification-create-task-fail-2');
         });
 
         it('Input a task name. A task is not created.', () => {
