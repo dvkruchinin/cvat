@@ -2,6 +2,7 @@ name: Cache
 on:
   push:
     branches:
+      - 'master'
       - 'develop-tmp'
 
 jobs:
