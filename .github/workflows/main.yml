@@ -24,7 +24,7 @@ jobs:
       - name: Waiting a cache creation in the default branch
         run: |
           URL_runs="https://api.github.com/repos/${{ github.repository }}/actions/workflows/cache.yml/runs"
-          SLEEP=30
+          SLEEP=45
           NUMBER_ATTEMPTS=10
           while [[ ${NUMBER_ATTEMPTS} -gt 0 ]]; do
             RUN_status=$(curl -s -X GET -G ${URL_runs} | jq -r '.workflow_runs[] | select((.head_sha == "${{ steps.get-sha.outputs.sha }}") and (.event == "push") and (.name == "Cache") and (.head_branch == "${{ steps.get-sha.outputs.default_branch }}")) | .status')
@@ -95,7 +95,7 @@ jobs:
       - name: Waiting a cache creation in the default branch
         run: |
           URL_runs="https://api.github.com/repos/${{ github.repository }}/actions/workflows/cache.yml/runs"
-          SLEEP=30
+          SLEEP=45
           NUMBER_ATTEMPTS=10
           while [[ ${NUMBER_ATTEMPTS} -gt 0 ]]; do
             RUN_status=$(curl -s -X GET -G ${URL_runs} | jq -r '.workflow_runs[] | select((.head_sha == "${{ steps.get-sha.outputs.sha }}") and (.event == "push") and (.name == "Cache") and (.head_branch == "${{ steps.get-sha.outputs.default_branch }}")) | .status')
