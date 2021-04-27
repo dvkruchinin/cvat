@@ -23,7 +23,7 @@ jobs:
           echo ::set-output name=sha::${SHA}
       - name: Waiting a cache creation in the default branch
         run: |
-          URL_runs="https://api.github.com/repos/${{ github.repository }}/actions/runs"
+          URL_runs="https://api.github.com/repos/${{ github.repository }}/actions/workflows/cache.yml/runs"
           SLEEP=30
           NUMBER_ATTEMPTS=10
           while [[ ${NUMBER_ATTEMPTS} -gt 0 ]]; do
@@ -59,11 +59,6 @@ jobs:
           cache-from: type=local,src=/tmp/cvat_cache_server
           tags: openvino/cvat_server:latest
           load: true
-      - name: docker images
-        run: |
-          docker images
-          ls -la /tmp
-          ls -R -la /tmp/cvat_cache_server
       - name: Runing unit tests
         env:
           HOST_COVERAGE_DATA_DIR: ${{ github.workspace }}
@@ -99,7 +94,7 @@ jobs:
           echo ::set-output name=sha::${SHA}
       - name: Waiting a cache creation in the default branch
         run: |
-          URL_runs="https://api.github.com/repos/${{ github.repository }}/actions/runs"
+          URL_runs="https://api.github.com/repos/${{ github.repository }}/actions/workflows/cache.yml/runs"
           SLEEP=30
           NUMBER_ATTEMPTS=10
           while [[ ${NUMBER_ATTEMPTS} -gt 0 ]]; do
@@ -151,20 +146,11 @@ jobs:
           cache-from: type=local,src=/tmp/cvat_cache_ui
           tags: openvino/cvat_ui:latest
           load: true
-      - name: docker images
-        run: |
-          docker images
-          ls -la /tmp
-          ls -R -la /tmp/cvat_cache_server
-          ls -R -la /tmp/cvat_cache_ui
-      - name: Code instrumentation
+      - name: Instrumentation of the code then rebuilding the CVAT UI
         if: github.ref == 'refs/heads/develop-tmp'
         run: |
           npm ci
           npm run coverage
-      - name: Re-building CVAT ui
-        if: github.ref == 'refs/heads/develop-tmp'
-        run: |
           docker-compose -f docker-compose.yml -f docker-compose.dev.yml build cvat_ui
       - name: Running e2e tests
         env:
