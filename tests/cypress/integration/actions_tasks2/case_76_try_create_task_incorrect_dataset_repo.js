@@ -43,17 +43,22 @@ context('Try to create a task with an incorrect dataset repository.', () => {
         });
 
         it('Set dummy dataset repository.', () => {
+            cy.intercept('DELETE', '/api/v1/tasks/**').as('deleteTask');
             cy.get('#repository').type(incorrectDatasetRepoUrlHttps);
             cy.get('.cvat-create-task-submit-section').click();
+            cy.wait('@deleteTask', {timeout: 15000}).its('response.statusCode').should('equal', 204);
             cy.get('.cvat-notification-notice-create-task-failed').should('exist');
             cy.closeNotification('.cvat-notification-notice-create-task-failed');
             cy.get('#repository').clear();
         });
 
         it('Set repository with missing access.', () => {
+            cy.intercept('DELETE', '/api/v1/tasks/**').as('deleteTask');
             cy.get('#repository').type(repositoryWithMissingAccess);
             cy.get('.cvat-create-task-submit-section').click();
+            cy.wait('@deleteTask', {timeout: 15000}).its('response.statusCode').should('equal', 204);
             cy.get('.cvat-notification-notice-create-task-failed').should('exist');
+            cy.wait(300000)
             cy.get('.cvat-create-task-clone-repository-fail').should('exist');
         });
     });
