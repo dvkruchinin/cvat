@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Intel Corporation
+// Copyright (C) 2020-2021 Intel Corporation
 //
 // SPDX-License-Identifier: MIT
 
@@ -8,10 +8,10 @@ context('Check User Guide.', () => {
     const issueId = '2391';
 
     describe(`Testing issue "${issueId}"`, () => {
-        it('User Guide is available.', () => {
+        it.skip('User Guide is available.', () => {
             cy.visit('documentation/user_guide.html');
         });
-        it('Checking for the several elements.', () => {
+        it.skip('Checking for the several elements.', () => {
             cy.get('#users-guide');
             cy.get('a');
             cy.get('img');
