@@ -21,60 +21,58 @@ context('Canvas 3D functionality. Opacity. Outlined borders.', () => {
         cy.wait(1000); // Waiting for the point cloud to display
         cy.create3DCuboid(cuboidCreationParams);
         cy.get('.cvat-canvas3d-perspective').trigger('mousemove').click(); // Deactivate the cuboiud
-        cy.get('.cvat-canvas3d-perspective').screenshot('canvas3d_perspective_deactivate_cuboid');
+        cy.get('#canvas3d-container').screenshot('canvas3d_deactivate_cuboid');
     });
 
     describe(`Testing case "${caseId}"`, () => {
         it('Change opacity to 100. To 0.', () => {
             cy.get('.cvat-appearance-opacity-slider').click('right');
             cy.get('.cvat-appearance-opacity-slider').find('[role="slider"]').should('have.attr', 'aria-valuenow', 100);
-            cy.get('.cvat-canvas3d-perspective').screenshot('canvas3d_perspective_opacty_100');
+            cy.get('#canvas3d-container').screenshot('canvas3d_opacty_100');
             cy.compareImagesAndCheckResult(
-                `${screenshotsPath}/canvas3d_perspective_deactivate_cuboid.png`,
-                `${screenshotsPath}/canvas3d_perspective_opacty_100.png`,
+                `${screenshotsPath}/canvas3d_deactivate_cuboid.png`,
+                `${screenshotsPath}/canvas3d_opacty_100.png`,
             );
             cy.get('.cvat-appearance-opacity-slider').click('left');
             cy.get('.cvat-appearance-opacity-slider').find('[role="slider"]').should('have.attr', 'aria-valuenow', 0);
-            cy.get('.cvat-canvas3d-perspective').screenshot('canvas3d_perspective_opacty_0');
+            cy.get('#canvas3d-container').screenshot('canvas3d_opacty_0');
             cy.compareImagesAndCheckResult(
-                `${screenshotsPath}/canvas3d_perspective_opacty_100.png`,
-                `${screenshotsPath}/canvas3d_perspective_opacty_0.png`,
+                `${screenshotsPath}/canvas3d_opacty_100.png`,
+                `${screenshotsPath}/canvas3d_opacty_0.png`,
             );
         });
 
         it('Change selected opacity to 100. To 0.', () => {
+            cy.get('.cvat-canvas3d-perspective').trigger('mousemove').trigger('mousemove', 250, 250).wait(1000); // Waiting for the cuboid activation
+            cy.get('#canvas3d-container').screenshot('canvas3d_cuboid_activated');
             cy.get('.cvat-appearance-selected-opacity-slider').click('right');
             cy.get('.cvat-appearance-selected-opacity-slider').find('[role="slider"]').should('have.attr', 'aria-valuenow', 100);
-            cy.get('.cvat-canvas3d-perspective').trigger('mousemove').trigger('mousemove', 250, 250).wait(1000); // Waiting for the cuboid activation
-            cy.get('.cvat-canvas3d-perspective').screenshot('canvas3d_perspective_selected_opacty_100');
+            cy.get('#canvas3d-container').screenshot('canvas3d_selected_opacty_100');
             cy.compareImagesAndCheckResult(
-                `${screenshotsPath}/canvas3d_perspective_opacty_100.png`,
-                `${screenshotsPath}/canvas3d_perspective_selected_opacty_100.png`,
-                true, // No diff between the images
+                `${screenshotsPath}/canvas3d_cuboid_activated.png`,
+                `${screenshotsPath}/canvas3d_selected_opacty_100.png`,
             );
             cy.get('.cvat-appearance-selected-opacity-slider').click('left');
             cy.get('.cvat-appearance-selected-opacity-slider').find('[role="slider"]').should('have.attr', 'aria-valuenow', 0);
-            cy.get('.cvat-canvas3d-perspective').screenshot('canvas3d_perspective_selected_opacty_0');
+            cy.get('#canvas3d-container').screenshot('canvas3d_selected_opacty_0');
             cy.compareImagesAndCheckResult(
-                `${screenshotsPath}/canvas3d_perspective_opacty_0.png`,
-                `${screenshotsPath}/canvas3d_perspective_selected_opacty_0.png`,
-                true, // No diff between the images
+                `${screenshotsPath}/canvas3d_selected_opacty_100.png`,
+                `${screenshotsPath}/canvas3d_selected_opacty_0.png`,
             );
         });
 
         it('Enable/disable outlined borders.', () => {
             cy.get('.cvat-appearance-outlinded-borders-checkbox').find('[type="checkbox"]').check();
-            cy.get('.cvat-canvas3d-perspective').screenshot('canvas3d_perspective_enable_outlined_borders');
+            cy.get('#canvas3d-container').screenshot('canvas3d_enable_outlined_borders');
             cy.compareImagesAndCheckResult(
-                `${screenshotsPath}/canvas3d_perspective_enable_outlined_borders.png`,
-                `${screenshotsPath}/canvas3d_perspective_selected_opacty_0.png`,
+                `${screenshotsPath}/canvas3d_enable_outlined_borders.png`,
+                `${screenshotsPath}/canvas3d_selected_opacty_0.png`,
             );
             cy.get('.cvat-appearance-outlinded-borders-checkbox').find('[type="checkbox"]').uncheck();
-            cy.get('.cvat-canvas3d-perspective').screenshot('canvas3d_perspective_disable_outlined_borders');
+            cy.get('#canvas3d-container').screenshot('canvas3d_disable_outlined_borders');
             cy.compareImagesAndCheckResult(
-                `${screenshotsPath}/canvas3d_perspective_disable_outlined_borders.png`,
-                `${screenshotsPath}/canvas3d_perspective_selected_opacty_0.png`,
-                true, // No diff between the images
+                `${screenshotsPath}/canvas3d_enable_outlined_borders.png`,
+                `${screenshotsPath}/canvas3d_disable_outlined_borders.png`,
             );
         });
     });
