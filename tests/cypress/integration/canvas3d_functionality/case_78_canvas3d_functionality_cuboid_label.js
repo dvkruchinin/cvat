@@ -64,11 +64,9 @@ context('Canvas 3D functionality. Interaction with cuboid via sidebar.', () => {
                 `${screenshotsPath}/canvas3d_perspective_after_activating_cuboid.png`,
                 `${screenshotsPath}/canvas3d_perspective_after_change_label_cuboid.png`,
             );
-            ['topview', 'sideview', 'frontview'].forEach((view) => {
-                cy.get(`.cvat-canvas3d-${view}`)
-                    .find('.cvat-canvas3d-fullsize')
-                    .screenshot(`canvas3d_${view}_change_label_cuboid`);
-            });
+            cy.get('.cvat-canvas3d-topview').find('.cvat-canvas3d-fullsize').screenshot('canvas3d_topview_change_label_cuboid');
+            cy.get('.cvat-canvas3d-topview').find('.cvat-canvas3d-fullsize').screenshot('canvas3d_sideview_change_label_cuboid');
+            cy.get('.cvat-canvas3d-topview').find('.cvat-canvas3d-fullsize').screenshot('canvas3d_frontview_change_label_cuboid');
             [
                 ['canvas3d_topview_activating_cuboid.png', 'canvas3d_topview_change_label_cuboid.png'],
                 ['canvas3d_sideview_activating_cuboid.png', 'canvas3d_sideview_change_label_cuboid.png'],
