@@ -4,6 +4,7 @@ on:
     branches:
       - 'master'
       - 'develop'
+      - 'develop-tmp'
   pull_request:
     branches:
       - '*'
@@ -164,7 +165,7 @@ jobs:
           docker exec -i cvat /bin/bash -c "echo \"from django.contrib.auth.models import User; User.objects.create_superuser('${DJANGO_SU_NAME}', '${DJANGO_SU_EMAIL}', '${DJANGO_SU_PASSWORD}')\" | python3 ~/manage.py shell"          docker exec -i cvat /bin/bash -c "echo \"from django.contrib.auth.models import User; User.objects.create_superuser('${DJANGO_SU_NAME}', '${DJANGO_SU_EMAIL}', '${DJANGO_SU_PASSWORD}')\" | python3 ~/manage.py shell"
           cd ./tests
           npm ci
-          if [[ ${{ github.ref }} == 'refs/heads/develop' ]]; then
+          if [[ ${{ github.ref }} == 'refs/heads/develop-tmp' ]]; then
             npx cypress run --headless --browser chrome --spec 'cypress/integration/${{ matrix.specs }}/**/*.js'
             mv ./.nyc_output/out.json ./.nyc_output/out_${{ matrix.specs }}.json
           else
