@@ -33,7 +33,7 @@ context('Canvas 3D functionality. Cuboid propagate.', () => {
             cy.get('.cvat-player-next-button').click();
             cy.get('#cvat-objects-sidebar-state-item-2').should('exist');
             cy.get('.cvat-player-next-button').click();
-            cy.get('#cvat-objects-sidebar-state-item-3').should('exist');
+            cy.get('#cvat-objects-sidebar-state-item-33').should('exist');
         });
     });
 });
