@@ -111,6 +111,8 @@ export class Canvas3dViewImpl implements Canvas3dView, Listener {
             },
         };
         this.action = {
+            loading: false,
+            oldState: '',
             scan: null,
             selectable: true,
             frameCoordinates: {
@@ -216,6 +218,35 @@ export class Canvas3dViewImpl implements Canvas3dView, Listener {
                     }),
                 );
             }
+            if (this.model.mode === Mode.DRAW) {
+                const { x, y, z } = this.cube.perspective.position;
+                const { x: width, y: height, z: depth } = this.cube.perspective.scale;
+                const { x: rotationX, y: rotationY, z: rotationZ } = this.cube.perspective.rotation;
+                const points = [x, y, z, rotationX, rotationY, rotationZ, width, height, depth, 0, 0, 0, 0, 0, 0, 0];
+                const initState = this.model.data.drawData.initialState;
+                let label;
+                if (initState) {
+                    ({ label } = initState);
+                }
+                this.dispatchEvent(
+                    new CustomEvent('canvas.drawn', {
+                        bubbles: false,
+                        cancelable: true,
+                        detail: {
+                            state: {
+                                ...initState,
+                                shapeType: 'cuboid',
+                                frame: this.model.data.imageID,
+                                points,
+                                label,
+                            },
+                            continue: undefined,
+                            duration: 0,
+                        },
+                    }),
+                );
+                this.action.oldState = Mode.DRAW;
+            }
         });
 
         canvasTopView.addEventListener('mousedown', this.startAction.bind(this, 'top'));
@@ -293,7 +324,7 @@ export class Canvas3dViewImpl implements Canvas3dView, Listener {
                     this.views.perspective.scene.children[0].children,
                     false,
                 );
-                if (intersects.length !== 0) {
+                if (intersects.length !== 0 || this.controller.focused.clientID !== null) {
                     this.setDefaultZoom();
                 } else {
                     const { x, y, z } = this.action.frameCoordinates;
@@ -571,6 +602,8 @@ export class Canvas3dViewImpl implements Canvas3dView, Listener {
                 recentMouseVector: new THREE.Vector2(0, 0),
             },
         };
+        this.model.mode = Mode.IDLE;
+        this.action.selectable = true;
     }
 
     private completeActions(): void {
@@ -604,8 +637,6 @@ export class Canvas3dViewImpl implements Canvas3dView, Listener {
         this.adjustPerspectiveCameras();
         this.translateReferencePlane(new THREE.Vector3(x, y, z));
         this.resetActions();
-        this.model.mode = Mode.IDLE;
-        this.action.selectable = true;
     }
 
     private onGroupDone(objects?: any[]): void {
@@ -718,6 +749,7 @@ export class Canvas3dViewImpl implements Canvas3dView, Listener {
                 const object = this.model.data.objects[i];
                 this.setupObject(object, true);
             }
+            this.action.loading = false;
         }
     }
 
@@ -735,6 +767,9 @@ export class Canvas3dViewImpl implements Canvas3dView, Listener {
     public notify(model: Canvas3dModel & Master, reason: UpdateReasons): void {
         if (reason === UpdateReasons.IMAGE_CHANGED) {
             if (!model.data.image) return;
+            this.views.perspective.renderer.dispose();
+            this.model.mode = Mode.BUSY;
+            this.action.loading = true;
             const loader = new PCDLoader();
             const objectURL = URL.createObjectURL(model.data.image.imageData);
             this.clearScene();
@@ -1153,6 +1188,8 @@ export class Canvas3dViewImpl implements Canvas3dView, Listener {
                         }
                         this.updateRotationHelperPos();
                         this.updateResizeHelperPos();
+                    } else {
+                        this.resetActions();
                     }
                 }
             }
@@ -1165,6 +1202,16 @@ export class Canvas3dViewImpl implements Canvas3dView, Listener {
             } finally {
                 this.action.detachCam = false;
             }
+        }
+        if (this.model.mode === Mode.BUSY && !this.action.loading) {
+            if (this.action.oldState !== '') {
+                this.model.mode = this.action.oldState;
+                this.action.oldState = '';
+            } else {
+                this.model.mode = Mode.IDLE;
+            }
+        } else if (this.model.data.objectUpdating && !this.action.loading) {
+            this.model.data.objectUpdating = false;
         }
     }
 
@@ -1729,9 +1776,6 @@ export class Canvas3dViewImpl implements Canvas3dView, Listener {
             true,
         );
         if (intersectsBox.length !== 0) {
-            // const [state] = this.model.data.objects.filter(
-            //     (_state: any): boolean => _state.clientID === Number(this.model.data.selected[view].name),
-            // );
             if (state.pinned) return;
             this.action.translation.helper = viewType.rayCaster.mouseVector.clone();
             this.action.translation.inverseMatrix = intersectsBox[0].object.parent.matrixWorld.invert();
@@ -1749,26 +1793,24 @@ export class Canvas3dViewImpl implements Canvas3dView, Listener {
     public keyControls(key: any): void {
         const { controls } = this.views.perspective;
         if (!controls) return;
-        switch (key.code) {
-            case CameraAction.ROTATE_RIGHT:
-                controls.rotate(0.1 * THREE.MathUtils.DEG2RAD * this.speed, 0, true);
-                break;
-            case CameraAction.ROTATE_LEFT:
-                controls.rotate(-0.1 * THREE.MathUtils.DEG2RAD * this.speed, 0, true);
-                break;
-            case CameraAction.TILT_UP:
-                controls.rotate(0, -0.05 * THREE.MathUtils.DEG2RAD * this.speed, true);
-                break;
-            case CameraAction.TILT_DOWN:
-                controls.rotate(0, 0.05 * THREE.MathUtils.DEG2RAD * this.speed, true);
-                break;
-            case 'ControlLeft':
-                this.action.selectable = !key.ctrlKey;
-                break;
-            default:
-                break;
-        }
-        if (key.altKey === true) {
+        if (key.shiftKey) {
+            switch (key.code) {
+                case CameraAction.ROTATE_RIGHT:
+                    controls.rotate(0.1 * THREE.MathUtils.DEG2RAD * this.speed, 0, true);
+                    break;
+                case CameraAction.ROTATE_LEFT:
+                    controls.rotate(-0.1 * THREE.MathUtils.DEG2RAD * this.speed, 0, true);
+                    break;
+                case CameraAction.TILT_UP:
+                    controls.rotate(0, -0.05 * THREE.MathUtils.DEG2RAD * this.speed, true);
+                    break;
+                case CameraAction.TILT_DOWN:
+                    controls.rotate(0, 0.05 * THREE.MathUtils.DEG2RAD * this.speed, true);
+                    break;
+                default:
+                    break;
+            }
+        } else if (key.altKey === true) {
             switch (key.code) {
                 case CameraAction.ZOOM_IN:
                     controls.dolly(CONST.DOLLY_FACTOR, true);
@@ -1791,6 +1833,8 @@ export class Canvas3dViewImpl implements Canvas3dView, Listener {
                 default:
                     break;
             }
+        } else if (key.code === 'ControlLeft') {
+            this.action.selectable = !key.ctrlKey;
         }
     }
 

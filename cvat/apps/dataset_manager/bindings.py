@@ -11,7 +11,7 @@ from django.utils import timezone
 
 import datumaro.components.extractor as datumaro
 from cvat.apps.engine.frame_provider import FrameProvider
-from cvat.apps.engine.models import AttributeType, ShapeType
+from cvat.apps.engine.models import AttributeType, ShapeType, DimensionType, Image as Img
 from datumaro.util import cast
 from datumaro.util.image import ByteImage, Image
 
@@ -20,6 +20,7 @@ from .annotation import AnnotationManager, TrackManager
 
 class TaskData:
     Attribute = namedtuple('Attribute', 'name, value')
+    Shape = namedtuple("Shape", 'id, label_id')  # 3d
     LabeledShape = namedtuple(
         'LabeledShape', 'type, frame, label, points, occluded, attributes, source, group, z_order')
     LabeledShape.__new__.__defaults__ = (0, 0)
@@ -30,7 +31,8 @@ class TaskData:
     Tag = namedtuple('Tag', 'frame, label, attributes, source, group')
     Tag.__new__.__defaults__ = (0, )
     Frame = namedtuple(
-        'Frame', 'idx, frame, name, width, height, labeled_shapes, tags')
+        'Frame', 'idx, id, frame, name, width, height, labeled_shapes, tags, shapes, labels')
+    Labels = namedtuple('Label', 'id, name, color')
 
     def __init__(self, annotation_ir, db_task, host='', create_callback=None):
         self._annotation_ir = annotation_ir
@@ -122,6 +124,7 @@ class TaskData:
             } for frame in range(self._db_task.data.size)}
         else:
             self._frame_info = {self.rel_frame_id(db_image.frame): {
+                "id": db_image.id,
                 "path": db_image.path,
                 "width": db_image.width,
                 "height": db_image.height,
@@ -234,6 +237,12 @@ class TaskData:
             attributes=self._export_attributes(shape["attributes"]),
         )
 
+    def _export_shape(self, shape):
+        return TaskData.Shape(
+            id=shape["id"],
+            label_id=shape["label_id"]
+        )
+
     def _export_tag(self, tag):
         return TaskData.Tag(
             frame=self.abs_frame_id(tag["frame"]),
@@ -241,6 +250,14 @@ class TaskData:
             group=tag.get("group", 0),
             source=tag["source"],
             attributes=self._export_attributes(tag["attributes"]),
+        )
+
+    @staticmethod
+    def _export_label(label):
+        return TaskData.Labels(
+            id=label.id,
+            name=label.name,
+            color=label.color
         )
 
     def group_by_frame(self, include_empty=False):
@@ -251,12 +268,15 @@ class TaskData:
             if frame not in frames:
                 frames[frame] = TaskData.Frame(
                     idx=idx,
+                    id=frame_info['id'],
                     frame=frame,
                     name=frame_info['path'],
                     height=frame_info["height"],
                     width=frame_info["width"],
                     labeled_shapes=[],
                     tags=[],
+                    shapes=[],
+                    labels={}
                 )
             return frames[frame]
 
@@ -265,6 +285,7 @@ class TaskData:
                 get_frame(idx)
 
         anno_manager = AnnotationManager(self._annotation_ir)
+        shape_data = ''
         for shape in sorted(anno_manager.to_shapes(self._db_task.data.size),
                 key=lambda shape: shape.get("z_order", 0)):
             if shape['frame'] not in self._frame_info:
@@ -278,8 +299,13 @@ class TaskData:
                 exported_shape = self._export_tracked_shape(shape)
             else:
                 exported_shape = self._export_labeled_shape(shape)
-            get_frame(shape['frame']).labeled_shapes.append(
-                exported_shape)
+                shape_data = self._export_shape(shape)
+            get_frame(shape['frame']).labeled_shapes.append(exported_shape)
+            if shape_data:
+                get_frame(shape['frame']).shapes.append(shape_data)
+                for label in self._label_mapping.values():
+                    label = self._export_label(label)
+                    get_frame(shape['frame']).labels.update({label.id: label})
 
         for tag in self._annotation_ir.tags:
             get_frame(tag['frame']).tags.append(self._export_tag(tag))
@@ -457,17 +483,42 @@ class TaskData:
         return None
 
 class CvatTaskDataExtractor(datumaro.SourceExtractor):
-    def __init__(self, task_data, include_images=False):
+    def __init__(self, task_data, include_images=False, format_type=None, dimension=DimensionType.DIM_2D):
         super().__init__()
-        self._categories = self._load_categories(task_data)
-
+        self._categories, self._user = self._load_categories(task_data, dimension=dimension)
+        self._dimension = dimension
+        self._format_type = format_type
         dm_items = []
+
+        if format_type == "point_cloud":
+            dm_item = self.dm_item(task_data)
 
         is_video = task_data.meta['task']['mode'] == 'interpolation'
         ext = ''
         if is_video:
             ext = FrameProvider.VIDEO_FRAME_EXT
-        if include_images:
+
+        if dimension == DimensionType.DIM_3D:
+            def _make_image(image_id, **kwargs):
+                loader = osp.join(
+                    task_data.db_task.data.get_upload_dirname(), kwargs['path'])
+                related_images = []
+                image = Img.objects.get(id=image_id)
+                for i in image.related_files.all():
+                    path = osp.realpath(str(i.path))
+                    if osp.isfile(path):
+                        name = path.rsplit("/", maxsplit=1)[-1]
+                        data = {"name": name,
+                                "path": path}
+                        if format_type == "velodyne_points":
+                            data["save_path"] = osp.basename(
+                                osp.dirname(osp.split(path)[0]))
+                        else:
+                            data["save_path"] = None
+                        related_images.append(data)
+                return loader, related_images
+
+        elif include_images:
             frame_provider = FrameProvider(task_data.db_task.data)
             if is_video:
                 # optimization for videos: use numpy arrays instead of bytes
@@ -490,17 +541,36 @@ class CvatTaskDataExtractor(datumaro.SourceExtractor):
                 'path': frame_data.name + ext,
                 'size': (frame_data.height, frame_data.width),
             }
-            if include_images:
+
+            if dimension == DimensionType.DIM_3D:
+                dm_image = _make_image(frame_data.id, **image_args)
+            elif include_images:
                 dm_image = _make_image(frame_data.idx, **image_args)
             else:
                 dm_image = Image(**image_args)
             dm_anno = self._read_cvat_anno(frame_data, task_data)
-            dm_item = datumaro.DatasetItem(id=osp.splitext(frame_data.name)[0],
-                annotations=dm_anno, image=dm_image,
-                attributes={'frame': frame_data.frame})
+
+            if dimension == DimensionType.DIM_2D:
+                dm_item = datumaro.DatasetItem(id=osp.splitext(frame_data.name)[0],
+                                               annotations=dm_anno, image=dm_image,
+                                               attributes={'frame': frame_data.frame})
+            elif dimension == DimensionType.DIM_3D:
+                attributes = {'frame': frame_data.frame}
+                if format_type == "point_cloud":
+                    attributes["name"] = self._user["name"]
+                    attributes["createdAt"] = self._user["createdAt"]
+                    attributes["updatedAt"] = self._user["updatedAt"]
+                    attributes["labels"] = []
+                    for label in frame_data.labels.values():
+                        attributes["labels"].append({"label_id": label.id, "name": label.name, "color": label.color})
+
+                dm_item = datumaro.DatasetItem(id=osp.split(frame_data.name)[-1],
+                                               annotations=dm_anno, pcd=dm_image[0], related_images=dm_image[1],
+                                               attributes=attributes)
+
             dm_items.append(dm_item)
 
-        self._items = dm_items
+        self._items = dm_items if dm_items else dm_item
 
     def __iter__(self):
         for item in self._items:
@@ -512,20 +582,51 @@ class CvatTaskDataExtractor(datumaro.SourceExtractor):
     def categories(self):
         return self._categories
 
+    def dm_item(self, task_data):
+        attributes = {
+            "name": self._user["name"],
+            "createdAt": self._user["createdAt"],
+            "updatedAt": self._user["updatedAt"],
+            "labels": []}
+        index = 0
+        for _, label in task_data.meta['task']['labels']:
+            attributes["labels"].append({"label_id": index, "name": label["name"], "color": label["color"]})
+            index += 1
+
+        return datumaro.DatasetItem(id="-1",
+                                       annotations=[], pcd=None, related_images=[],
+                                       attributes=attributes)
+
+
     @staticmethod
-    def _load_categories(cvat_anno):
+    def _load_categories(cvat_anno, dimension):
         categories = {}
 
         label_categories = datumaro.LabelCategories(attributes=['occluded'])
 
+        user_info = {}
+        if dimension == DimensionType.DIM_3D:
+            user_info = {"name": cvat_anno.meta['task']['owner']['username'],
+                         "createdAt": cvat_anno.meta['task']['created'],
+                         "updatedAt": cvat_anno.meta['task']['updated']}
+        index = 0
         for _, label in cvat_anno.meta['task']['labels']:
+            attributes = []
             label_categories.add(label['name'])
+
             for _, attr in label['attributes']:
-                label_categories.attributes.add(attr['name'])
+                if dimension == DimensionType.DIM_3D:
+                    attributes.append(attr['name'])
+                else:
+                    label_categories.attributes.add(attr['name'])
+
+            if attributes:
+                label_categories.items[index].attributes.update(attributes)
+                index += 1
 
         categories[datumaro.AnnotationType.label] = label_categories
 
-        return categories
+        return categories, user_info
 
     def _read_cvat_anno(self, cvat_frame_anno, task_data):
         item_anno = []
@@ -565,7 +666,11 @@ class CvatTaskDataExtractor(datumaro.SourceExtractor):
                 attributes=anno_attr, group=anno_group)
             item_anno.append(anno)
 
-        for shape_obj in cvat_frame_anno.labeled_shapes:
+        shapes = []
+        for shape in cvat_frame_anno.shapes:
+            shapes.append({"id": shape.id, "label_id": shape.label_id})
+
+        for index, shape_obj in enumerate(cvat_frame_anno.labeled_shapes):
             anno_group = shape_obj.group or 0
             anno_label = map_label(shape_obj.label)
             anno_attr = convert_attrs(shape_obj.label, shape_obj.attributes)
@@ -594,7 +699,18 @@ class CvatTaskDataExtractor(datumaro.SourceExtractor):
                     label=anno_label, attributes=anno_attr, group=anno_group,
                     z_order=shape_obj.z_order)
             elif shape_obj.type == ShapeType.CUBOID:
-                continue # Datumaro does not support cuboids
+                if self._dimension == DimensionType.DIM_3D:
+                    if self._format_type == "point_cloud":
+                        anno_id = shapes[index]["id"]
+                        anno_attr["label_id"] = shapes[index]["label_id"]
+                    else:
+                        anno_id = index
+
+                    anno = datumaro.Cuboid3D(id=anno_id, points=anno_points,
+                                             label=anno_label, attributes=anno_attr, group=anno_group,
+                                             z_order=shape_obj.z_order)
+                else:
+                    continue
             else:
                 raise Exception("Unknown shape type '%s'" % shape_obj.type)
 
@@ -641,6 +757,7 @@ def import_dm_annotations(dm_dataset, task_data):
         datumaro.AnnotationType.polygon: ShapeType.POLYGON,
         datumaro.AnnotationType.polyline: ShapeType.POLYLINE,
         datumaro.AnnotationType.points: ShapeType.POINTS,
+        datumaro.AnnotationType.cuboid: ShapeType.CUBOID
     }
 
     if len(dm_dataset) == 0:
