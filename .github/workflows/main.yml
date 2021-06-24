@@ -80,7 +80,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        specs: ['actions_tasks', 'actions_tasks2', 'actions_tasks3', 'actions_objects', 'actions_objects2', 'actions_users', 'actions_projects', 'canvas3d_functionality', 'issues_prs', 'issues_prs2']
+        specs: ['canvas3d_functionality']
     steps:
       - uses: actions/checkout@v2
       - name: Getting SHA from the default branch
@@ -147,7 +147,6 @@ jobs:
           tags: openvino/cvat_ui:latest
           load: true
       - name: Instrumentation of the code then rebuilding the CVAT UI
-        if: github.ref == 'refs/heads/develop'
         run: |
           npm ci
           npm run coverage
@@ -164,20 +163,8 @@ jobs:
           docker exec -i cvat /bin/bash -c "echo \"from django.contrib.auth.models import User; User.objects.create_superuser('${DJANGO_SU_NAME}', '${DJANGO_SU_EMAIL}', '${DJANGO_SU_PASSWORD}')\" | python3 ~/manage.py shell"          docker exec -i cvat /bin/bash -c "echo \"from django.contrib.auth.models import User; User.objects.create_superuser('${DJANGO_SU_NAME}', '${DJANGO_SU_EMAIL}', '${DJANGO_SU_PASSWORD}')\" | python3 ~/manage.py shell"
           cd ./tests
           npm ci
-          if [[ ${{ github.ref }} == 'refs/heads/develop' ]]; then
-            if [[ ${{ matrix.specs }} != 'canvas3d_functionality' ]]; then
-              npx cypress run --headless --browser chrome --spec 'cypress/integration/${{ matrix.specs }}/**/*.js'
-            else
-              npx cypress run --browser chrome --spec 'cypress/integration/${{ matrix.specs }}/**/*.js'
-            fi
-            mv ./.nyc_output/out.json ./.nyc_output/out_${{ matrix.specs }}.json
-          else
-            if [[ ${{ matrix.specs }} != 'canvas3d_functionality' ]]; then
-              npx cypress run --headless --browser chrome --env coverage=false --spec 'cypress/integration/${{ matrix.specs }}/**/*.js'
-            else
-              npx cypress run --browser chrome --env coverage=false --spec 'cypress/integration/${{ matrix.specs }}/**/*.js'
-            fi
-          fi
+          DEBUG=cypress:server:plugins npx cypress run --browser chrome --spec 'cypress/integration/${{ matrix.specs }}/case_56_canvas3d_functionality_basic_actions.js'
+          mv ./.nyc_output/out.json ./.nyc_output/out_${{ matrix.specs }}.json
       - name: Creating a log file from "cvat" container logs
         if: failure()
         run: |
