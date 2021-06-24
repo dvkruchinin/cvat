@@ -192,6 +192,7 @@ context('Canvas 3D functionality. Basic actions.', () => {
                 'frontview_before_wheel',
                 'frontview_after_wheel',
             );
+            cy.wait(1000);
         });
     });
 });
