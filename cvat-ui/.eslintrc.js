@@ -21,6 +21,7 @@ module.exports = {
         'plugin:import/typescript',
     ],
     ignorePatterns: ['.eslintrc.js'],
+    ignorePath: './.eslintignore',
     rules: {
         '@typescript-eslint/indent': ['warn', 4],
         '@typescript-eslint/lines-between-class-members': 0,
