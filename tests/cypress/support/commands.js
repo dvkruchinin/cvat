@@ -509,6 +509,7 @@ Cypress.Commands.add('removeAnnotations', () => {
 Cypress.Commands.add('goToTaskList', () => {
     cy.get('a[value="tasks"]').click();
     cy.url().should('include', '/tasks');
+    cy.get('.cvat-tasks-page').should('exist').and('be.visible');
 });
 
 Cypress.Commands.add('changeColorViaBadge', (labelColor) => {
